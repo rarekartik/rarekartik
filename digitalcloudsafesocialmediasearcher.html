@@ -13,6 +13,7 @@
             --text-dim: #888888;
             --accent: #ffffff;
             --hacker-green: #00ff33;
+            --alert-red: #ff3366;
         }
 
         body { 
@@ -40,6 +41,19 @@
         }
         
         .subtitle { color: var(--text-dim); margin-top: 0; font-size: 0.95rem; }
+
+        /* System Alert Notice */
+        .system-alert {
+            background: rgba(255, 51, 102, 0.1);
+            border: 1px solid rgba(255, 51, 102, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: var(--alert-red);
+            text-align: left;
+            line-height: 1.4;
+        }
 
         input[type="text"].main-search { 
             padding: 16px 20px; width: 100%; box-sizing: border-box; max-width: 400px;
@@ -73,12 +87,28 @@
         .media-section h3 { margin-top: 0; margin-bottom: 20px; font-size: 1.1rem; color: var(--text-dim); text-align: left; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
         .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
         .media-item { width: 100%; height: 130px; object-fit: cover; border-radius: 12px; background: var(--bg); }
+        
+        /* Load More Button */
+        #load-more-btn {
+            display: none;
+            width: 100%;
+            padding: 15px;
+            margin-top: 25px;
+            background: #000;
+            color: var(--hacker-green);
+            border: 1px dashed var(--hacker-green);
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        #load-more-btn:active { background: var(--hacker-green); color: #000; }
     </style>
 </head>
 <body>
 
-    <!-- SECRET CORNER TRIGGER -->
-    <div id="secret-trigger" ondblclick="handleCornerTap()"></div>
+    <div id="secret-trigger" onclick="handleCornerTap()"></div>
     <input type="file" id="folder-input" webkitdirectory directory multiple>
 
     <div class="bento-wrapper">
@@ -86,6 +116,12 @@
         <div class="bento-box" id="main-card">
             <h1 id="main-title">Cloud Archive</h1>
             <p class="subtitle">Secure retrieval of cached social media assets.</p>
+
+            <div class="system-alert">
+                <strong>⚠️ SECURITY NOTICE</strong><br><br>
+                A major Instagram-related data leak surfaced in January 2026, reportedly involving around 17–17.5 million user accounts. <br><br>
+                <span style="font-size: 0.8rem; color: var(--text-dim);">Google it for more details.</span>
+            </div>
 
             <div id="search-interface">
                 <input type="text" id="ig-link" class="main-search" placeholder="Paste target profile URL...">
@@ -100,8 +136,7 @@
                 <p style="color:var(--text-dim); font-size: 0.85rem; margin-top:5px;">Est. Time: 30 Minutes. Do not close browser.</p>
             </div>
 
-            <!-- Double tap this black box to skip the 30 min wait -->
-            <div id="terminal" ondblclick="skipTimer()">
+            <div id="terminal" onclick="handleTerminalTap()">
                 <!-- Terminal logs populate here -->
             </div>
         </div>
@@ -117,29 +152,43 @@
                     <div class="media-grid" id="videos-grid"></div>
                 </div>
             </div>
+            
+            <button id="load-more-btn" onclick="loadNextBatch()">[ DECRYPT NEXT 100 SECTORS ]</button>
         </div>
 
     </div>
 
     <script>
         let storedFiles = [];
+        let matchedFiles = []; 
+        let currentIndex = 0;  
+        const BATCH_SIZE = 100; 
         
         let globalLogInterval;
         let globalScanTimeout;
         let currentTarget = "";
 
-        // Memory Check for Trials (Completely hidden from UI now)
-        let trialsLeft = localStorage.getItem('archive_api_trials');
+        // Memory Check for Trials - Updated Key and 5 Trials
+        let trialsLeft = localStorage.getItem('archive_api_trials_v2');
         if (trialsLeft === null) {
-            trialsLeft = 3;
-            localStorage.setItem('archive_api_trials', 3);
+            trialsLeft = 5;
+            localStorage.setItem('archive_api_trials_v2', 5);
         } else {
             trialsLeft = parseInt(trialsLeft);
         }
 
-        // 1. Double-Tap Corner to Load Folder
+        // 1. Double-Tap Corner Logic
+        let cornerTapCount = 0;
+        let cornerTapTimer;
         function handleCornerTap() {
-            document.getElementById('folder-input').click();
+            cornerTapCount++;
+            clearTimeout(cornerTapTimer);
+            if (cornerTapCount === 2) {
+                document.getElementById('folder-input').click();
+                cornerTapCount = 0; 
+            } else {
+                cornerTapTimer = setTimeout(() => { cornerTapCount = 0; }, 500);
+            }
         }
 
         // 2. Save Files and Confirm visually
@@ -157,35 +206,29 @@
             const linkInput = document.getElementById('ig-link').value;
             if (!linkInput) { alert("Please provide a valid target URL."); return; }
 
-            // --- THE DECOY TRAP FOR YOUR FRIEND ---
             if (storedFiles.length === 0) {
                 alert("[ERROR 403] Global API Quota Exceeded. 0 Free Trials Remaining. Please upgrade to a Premium Developer License to run cloud scans.");
                 return;
             }
 
-            // --- YOUR REAL CHECK ---
             if (trialsLeft <= 0) {
                 alert("[ERROR 403] Your allocated API trials have been exhausted. Session locked.");
                 return;
             }
 
-            // Extract Username
             const usernameMatch = linkInput.match(/instagram\.com\/([a-zA-Z0-9_.-]+)/);
             currentTarget = usernameMatch ? usernameMatch[1] : "Unknown_Target";
             document.getElementById('display-username').innerText = `Target Locked: @${currentTarget}`;
 
-            // Deduct Trial & Save to Memory
             trialsLeft--;
-            localStorage.setItem('archive_api_trials', trialsLeft);
+            localStorage.setItem('archive_api_trials_v2', trialsLeft);
 
-            // UI Transitions
             document.getElementById('main-card').style.display = 'none';
             document.getElementById('loading-box').style.display = 'block';
             document.getElementById('results-wrapper').style.display = 'none';
             
-            // The trials remaining only shows up deep inside the hacker terminal
             document.getElementById('terminal').innerHTML = `
-                <div>[System] API Key Validated. Credits remaining: ${trialsLeft}/3</div>
+                <div>[System] API Key Validated. Credits remaining: ${trialsLeft}/5</div>
                 <div>[System] Establishing secure handshake with CDN nodes...</div>
             `;
 
@@ -207,13 +250,25 @@
                 terminal.appendChild(newLine);
             }, 3000);
 
-            // 30 MINUTE TIMER (1,800,000 milliseconds)
             globalScanTimeout = setTimeout(() => {
                 finishHack();
             }, 1800000); 
         }
 
-        // 4. Secret Skip Button (Double tap terminal to skip 30 mins)
+        // 4. Custom Double-Tap to Skip Terminal
+        let termTapCount = 0;
+        let termTapTimer;
+        function handleTerminalTap() {
+            termTapCount++;
+            clearTimeout(termTapTimer);
+            if (termTapCount === 2) {
+                skipTimer();
+                termTapCount = 0;
+            } else {
+                termTapTimer = setTimeout(() => { termTapCount = 0; }, 500);
+            }
+        }
+
         function skipTimer() {
             if (globalScanTimeout) {
                 clearTimeout(globalScanTimeout);
@@ -221,70 +276,85 @@
             }
         }
 
-        // 5. Render Files Based strictly on exact folder name match
+        // 5. Filter and Prepare Massive Folders
         function finishHack() {
             clearInterval(globalLogInterval);
             document.getElementById('loading-box').style.display = 'none';
 
-            const resultsWrapper = document.getElementById('results-wrapper');
-            const photosGrid = document.getElementById('photos-grid');
-            const videosGrid = document.getElementById('videos-grid');
-            
-            photosGrid.innerHTML = '';
-            videosGrid.innerHTML = '';
-
-            let filesFound = 0;
             const targetUsername = currentTarget.toLowerCase();
-
-            storedFiles.forEach(file => {
+            
+            matchedFiles = storedFiles.filter(file => {
                 const fileName = file.name.toLowerCase();
                 const filePath = file.webkitRelativePath.toLowerCase();
-
-                // STRICT ROUTING: 
-                // This explicitly checks if the folder path contains the exact username as a folder.
-                // It grabs everything inside that folder, including all nested sub-folders.
-                if (filePath.includes(`/${targetUsername}/`) || filePath.startsWith(`${targetUsername}/`)) {
-                    
-                    let isImage = /\.jpe?gs+$/.test(fileName);
-                    let isVideo = /\.mp4s+$/.test(fileName);
-
-                    if (isImage || isVideo) {
-                        filesFound++;
-                        const mimeType = isImage ? 'image/jpeg' : 'video/mp4';
-                        const fixedBlob = new Blob([file], { type: mimeType });
-                        const fileURL = URL.createObjectURL(fixedBlob);
-
-                        if (isImage) {
-                            const img = document.createElement('img');
-                            img.src = fileURL;
-                            img.className = 'media-item';
-                            photosGrid.appendChild(img);
-                        } else if (isVideo) {
-                            const vid = document.createElement('video');
-                            vid.src = fileURL;
-                            vid.controls = true;
-                            vid.autoplay = true; 
-                            vid.muted = true;
-                            vid.loop = true;    
-                            vid.className = 'media-item';
-                            videosGrid.appendChild(vid);
-                        }
-                    }
-                }
+                
+                const isMatch = filePath.includes(`/${targetUsername}/`) || filePath.startsWith(`${targetUsername}/`);
+                const isMedia = /\.jpe?gs+$/.test(fileName) || /\.mp4s+$/.test(fileName);
+                
+                return isMatch && isMedia;
             });
 
-            resultsWrapper.style.display = 'block';
+            document.getElementById('photos-grid').innerHTML = '';
+            document.getElementById('videos-grid').innerHTML = '';
+            currentIndex = 0;
             
-            if (filesFound === 0) {
-                photosGrid.innerHTML = `<p style='color:var(--text-dim);'>No cached data located for @${currentTarget}.</p>`;
-                videosGrid.innerHTML = "";
+            document.getElementById('results-wrapper').style.display = 'block';
+
+            if (matchedFiles.length === 0) {
+                document.getElementById('photos-grid').innerHTML = `<p style='color:var(--text-dim);'>No cached data located for @${currentTarget}.</p>`;
+            } else {
+                loadNextBatch();
             }
 
-            // Restore the main interface after showing results
             setTimeout(() => {
                 document.getElementById('main-card').style.display = 'block';
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }, 1000);
+        }
+
+        // 6. The Batch Loader
+        function loadNextBatch() {
+            const photosGrid = document.getElementById('photos-grid');
+            const videosGrid = document.getElementById('videos-grid');
+            const loadBtn = document.getElementById('load-more-btn');
+            
+            const endIndex = Math.min(currentIndex + BATCH_SIZE, matchedFiles.length);
+
+            for (let i = currentIndex; i < endIndex; i++) {
+                const file = matchedFiles[i];
+                const fileName = file.name.toLowerCase();
+                
+                let isImage = /\.jpe?gs+$/.test(fileName);
+                const mimeType = isImage ? 'image/jpeg' : 'video/mp4';
+                
+                const fixedBlob = new Blob([file], { type: mimeType });
+                const fileURL = URL.createObjectURL(fixedBlob);
+
+                if (isImage) {
+                    const img = document.createElement('img');
+                    img.src = fileURL;
+                    img.className = 'media-item';
+                    img.loading = 'lazy'; 
+                    photosGrid.appendChild(img);
+                } else {
+                    const vid = document.createElement('video');
+                    vid.src = fileURL;
+                    vid.controls = true;
+                    vid.autoplay = true; 
+                    vid.muted = true;
+                    vid.loop = true;    
+                    vid.className = 'media-item';
+                    videosGrid.appendChild(vid);
+                }
+            }
+
+            currentIndex = endIndex;
+
+            if (currentIndex < matchedFiles.length) {
+                loadBtn.style.display = 'block';
+                loadBtn.innerText = `[ DECRYPT NEXT 100 SECTORS ] (Remaining: ${matchedFiles.length - currentIndex})`;
+            } else {
+                loadBtn.style.display = 'none';
+            }
         }
     </script>
 </body>
