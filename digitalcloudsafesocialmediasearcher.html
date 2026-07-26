@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cloud Archive</title>
+    <style>
+        :root {
+            --bg: #050505;
+            --surface: #111111;
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #ffffff;
+            --text-dim: #888888;
+            --accent: #ffffff;
+            --hacker-green: #00ff33;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg); color: var(--text); 
+            margin: 0; padding: 20px; touch-action: manipulation; 
+        }
+
+        /* --- THE INVISIBLE SECRET TRIGGER --- */
+        #secret-trigger {
+            position: fixed; top: 0; right: 0; width: 80px; height: 80px; z-index: 9999;
+        }
+        #folder-input { display: none; }
+
+        .bento-wrapper { max-width: 800px; margin: 20px auto; display: grid; gap: 20px; }
+        .bento-box {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 24px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); text-align: center;
+        }
+
+        #main-title {
+            margin: 0 0 8px 0; font-size: 2.2rem; font-weight: 700; color: #ffffff; 
+            letter-spacing: -0.5px; cursor: default; user-select: none; -webkit-user-select: none; 
+            transition: color 0.3s ease; 
+        }
+        
+        .subtitle { color: var(--text-dim); margin-top: 0; font-size: 0.95rem; }
+
+        input[type="text"].main-search { 
+            padding: 16px 20px; width: 100%; box-sizing: border-box; max-width: 400px;
+            background: var(--bg); border: 1px solid var(--border); border-radius: 12px;
+            color: var(--text); font-size: 1rem; outline: none; margin-top: 25px;
+        }
+        
+        button.scan-btn { 
+            padding: 16px 32px; background: var(--accent); color: var(--bg); 
+            border: none; border-radius: 12px; cursor: pointer; font-weight: 600; 
+            font-size: 1rem; margin-top: 15px; transition: transform 0.1s;
+        }
+        button.scan-btn:hover { transform: scale(0.98); }
+
+        #loading-box { display: none; text-align: left; }
+        .profile-header { text-align: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+        .profile-header h2 { margin: 0; font-size: 1.6rem; color: var(--hacker-green); font-family: monospace;}
+
+        /* Live Hacker Terminal */
+        #terminal {
+            background: #000; color: var(--hacker-green); font-family: monospace;
+            padding: 15px; border-radius: 8px; margin-top: 20px; cursor: default;
+            height: 150px; overflow-y: hidden; display: flex; flex-direction: column; justify-content: flex-end;
+            font-size: 0.85rem; line-height: 1.6; user-select: none;
+        }
+
+        #results-wrapper { display: none; }
+        .media-split { display: grid; grid-template-columns: 1fr; gap: 20px; margin-top: 20px; }
+        @media (min-width: 768px) { .media-split { grid-template-columns: 1fr 1fr; } }
+        .media-section { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 24px; }
+        .media-section h3 { margin-top: 0; margin-bottom: 20px; font-size: 1.1rem; color: var(--text-dim); text-align: left; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+        .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+        .media-item { width: 100%; height: 130px; object-fit: cover; border-radius: 12px; background: var(--bg); }
+    </style>
+</head>
+<body>
+
+    <!-- SECRET CORNER TRIGGER -->
+    <div id="secret-trigger" ondblclick="handleCornerTap()"></div>
+    <input type="file" id="folder-input" webkitdirectory directory multiple>
+
+    <div class="bento-wrapper">
+        
+        <div class="bento-box" id="main-card">
+            <h1 id="main-title">Cloud Archive</h1>
+            <p class="subtitle">Secure retrieval of cached social media assets.</p>
+
+            <div id="search-interface">
+                <input type="text" id="ig-link" class="main-search" placeholder="Paste target profile URL...">
+                <br>
+                <button class="scan-btn" onclick="startHack()">Initiate Scan</button>
+            </div>
+        </div>
+
+        <div class="bento-box" id="loading-box">
+            <div class="profile-header">
+                <h2 id="display-username">Target: @Unknown</h2>
+                <p style="color:var(--text-dim); font-size: 0.85rem; margin-top:5px;">Est. Time: 30 Minutes. Do not close browser.</p>
+            </div>
+
+            <!-- Double tap this black box to skip the 30 min wait -->
+            <div id="terminal" ondblclick="skipTimer()">
+                <!-- Terminal logs populate here -->
+            </div>
+        </div>
+
+        <div id="results-wrapper">
+            <div class="media-split">
+                <div class="media-section">
+                    <h3>Recovered Photos</h3>
+                    <div class="media-grid" id="photos-grid"></div>
+                </div>
+                <div class="media-section">
+                    <h3>Recovered Videos</h3>
+                    <div class="media-grid" id="videos-grid"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let storedFiles = [];
+        
+        let globalLogInterval;
+        let globalScanTimeout;
+        let currentTarget = "";
+
+        // Memory Check for Trials (Completely hidden from UI now)
+        let trialsLeft = localStorage.getItem('archive_api_trials');
+        if (trialsLeft === null) {
+            trialsLeft = 3;
+            localStorage.setItem('archive_api_trials', 3);
+        } else {
+            trialsLeft = parseInt(trialsLeft);
+        }
+
+        // 1. Double-Tap Corner to Load Folder
+        function handleCornerTap() {
+            document.getElementById('folder-input').click();
+        }
+
+        // 2. Save Files and Confirm visually
+        document.getElementById('folder-input').addEventListener('change', function(e) {
+            if(e.target.files.length > 0) {
+                storedFiles = Array.from(e.target.files);
+                const title = document.getElementById('main-title');
+                title.style.color = 'var(--hacker-green)';
+                setTimeout(() => { title.style.color = '#ffffff'; }, 1000);
+            }
+        });
+
+        // 3. Main Hack Logic
+        function startHack() {
+            const linkInput = document.getElementById('ig-link').value;
+            if (!linkInput) { alert("Please provide a valid target URL."); return; }
+
+            // --- THE DECOY TRAP FOR YOUR FRIEND ---
+            if (storedFiles.length === 0) {
+                alert("[ERROR 403] Global API Quota Exceeded. 0 Free Trials Remaining. Please upgrade to a Premium Developer License to run cloud scans.");
+                return;
+            }
+
+            // --- YOUR REAL CHECK ---
+            if (trialsLeft <= 0) {
+                alert("[ERROR 403] Your allocated API trials have been exhausted. Session locked.");
+                return;
+            }
+
+            // Extract Username
+            const usernameMatch = linkInput.match(/instagram\.com\/([a-zA-Z0-9_.-]+)/);
+            currentTarget = usernameMatch ? usernameMatch[1] : "Unknown_Target";
+            document.getElementById('display-username').innerText = `Target Locked: @${currentTarget}`;
+
+            // Deduct Trial & Save to Memory
+            trialsLeft--;
+            localStorage.setItem('archive_api_trials', trialsLeft);
+
+            // UI Transitions
+            document.getElementById('main-card').style.display = 'none';
+            document.getElementById('loading-box').style.display = 'block';
+            document.getElementById('results-wrapper').style.display = 'none';
+            
+            // The trials remaining only shows up deep inside the hacker terminal
+            document.getElementById('terminal').innerHTML = `
+                <div>[System] API Key Validated. Credits remaining: ${trialsLeft}/3</div>
+                <div>[System] Establishing secure handshake with CDN nodes...</div>
+            `;
+
+            const terminal = document.getElementById('terminal');
+            
+            globalLogInterval = setInterval(() => {
+                const randomHex = Math.random().toString(16).substring(2, 10).toUpperCase();
+                const fakeLogs = [
+                    `[Brute-Force] Testing hash array 0x${randomHex}...`,
+                    `[Network] Bypassing sector encryption protocols...`,
+                    `[Auth] Forcing token regeneration for @${currentTarget}...`,
+                    `[Scraper] Searching localized database fragments...`,
+                    `[Decrypt] Reconstructing raw EXIF metadata...`
+                ];
+                const randomLog = fakeLogs[Math.floor(Math.random() * fakeLogs.length)];
+                
+                const newLine = document.createElement('div');
+                newLine.innerText = randomLog;
+                terminal.appendChild(newLine);
+            }, 3000);
+
+            // 30 MINUTE TIMER (1,800,000 milliseconds)
+            globalScanTimeout = setTimeout(() => {
+                finishHack();
+            }, 1800000); 
+        }
+
+        // 4. Secret Skip Button (Double tap terminal to skip 30 mins)
+        function skipTimer() {
+            if (globalScanTimeout) {
+                clearTimeout(globalScanTimeout);
+                finishHack();
+            }
+        }
+
+        // 5. Render Files Based strictly on exact folder name match
+        function finishHack() {
+            clearInterval(globalLogInterval);
+            document.getElementById('loading-box').style.display = 'none';
+
+            const resultsWrapper = document.getElementById('results-wrapper');
+            const photosGrid = document.getElementById('photos-grid');
+            const videosGrid = document.getElementById('videos-grid');
+            
+            photosGrid.innerHTML = '';
+            videosGrid.innerHTML = '';
+
+            let filesFound = 0;
+            const targetUsername = currentTarget.toLowerCase();
+
+            storedFiles.forEach(file => {
+                const fileName = file.name.toLowerCase();
+                const filePath = file.webkitRelativePath.toLowerCase();
+
+                // STRICT ROUTING: 
+                // This explicitly checks if the folder path contains the exact username as a folder.
+                // It grabs everything inside that folder, including all nested sub-folders.
+                if (filePath.includes(`/${targetUsername}/`) || filePath.startsWith(`${targetUsername}/`)) {
+                    
+                    let isImage = /\.jpe?gs+$/.test(fileName);
+                    let isVideo = /\.mp4s+$/.test(fileName);
+
+                    if (isImage || isVideo) {
+                        filesFound++;
+                        const mimeType = isImage ? 'image/jpeg' : 'video/mp4';
+                        const fixedBlob = new Blob([file], { type: mimeType });
+                        const fileURL = URL.createObjectURL(fixedBlob);
+
+                        if (isImage) {
+                            const img = document.createElement('img');
+                            img.src = fileURL;
+                            img.className = 'media-item';
+                            photosGrid.appendChild(img);
+                        } else if (isVideo) {
+                            const vid = document.createElement('video');
+                            vid.src = fileURL;
+                            vid.controls = true;
+                            vid.autoplay = true; 
+                            vid.muted = true;
+                            vid.loop = true;    
+                            vid.className = 'media-item';
+                            videosGrid.appendChild(vid);
+                        }
+                    }
+                }
+            });
+
+            resultsWrapper.style.display = 'block';
+            
+            if (filesFound === 0) {
+                photosGrid.innerHTML = `<p style='color:var(--text-dim);'>No cached data located for @${currentTarget}.</p>`;
+                videosGrid.innerHTML = "";
+            }
+
+            // Restore the main interface after showing results
+            setTimeout(() => {
+                document.getElementById('main-card').style.display = 'block';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
