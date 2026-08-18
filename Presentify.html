@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ProDeck Builder | RareKartik Engine</title>
+    
+    <!-- External Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.css">
+    <!-- JSZip Library for packaging presentations into zip files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <style>
+        /* ==========================================================================
+           CORE VARIABLES & RESET
+           ========================================================================== */
+        :root {
+            --bg-color: #f3f4f6; 
+            --toolbar-bg: #ffffff; 
+            --border-color: #e5e7eb;
+            --text-main: #1f2937; 
+            --text-muted: #6b7280; 
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8; 
+            --slide-bg: #ffffff;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            touch-action: manipulation; /* Kills double-tap to zoom */
+        }
+        
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+            transition: background 0.3s, color 0.3s; 
+        }
+
+        /* ==========================================================================
+           MODALS & OVERLAYS (STARTUP PROMPT)
+           ========================================================================== */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 10000;
+        }
+
+        .modal-box {
+            background: var(--toolbar-bg);
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            max-width: 400px;
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-box h2 { margin-bottom: 15px; color: var(--text-main); }
+        .modal-box p { margin-bottom: 25px; color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; }
+        
+        .modal-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: transform 0.2s, filter 0.2s;
+        }
+        
+        .modal-btn:active { transform: scale(0.95); }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-secondary { background: transparent; border: 2px solid var(--border-color); color: var(--text-main); }
+
+        /* ==========================================================================
+           BRANDING FOOTER
+           ========================================================================== */
+        .rare-kartik-footer { 
+            position: fixed; 
+            bottom: 20px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            font-size: 1rem; 
+            font-weight: 700; 
+            color: var(--text-main); 
+            background: var(--toolbar-bg); 
+            padding: 10px 24px; 
+            border-radius: 50px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
+            letter-spacing: 1px; 
+            z-index: 1000; 
+            border: 1px solid var(--border-color); 
+            transition: all 0.3s; 
+        }
+
+        /* ==========================================================================
+           15 GOD-LEVEL THEMES (UN-MINIFIED)
+           ========================================================================== */
+        .reveal .slide-background { 
+            background: transparent !important; 
+        }
+        
+        /* 1. Cinematic Dark */
+        .reveal.theme-cinematic { 
+            background: radial-gradient(circle at center, #1e293b 0%, #020617 100%) !important; 
+        }
+        .reveal.theme-cinematic :is(h1, h2, h3, p, li, div) { 
+            color: #f8fafc !important; 
+            text-shadow: 0 4px 10px rgba(0,0,0,0.5) !important; 
+        }
+        .reveal.theme-cinematic :is(h1, h2) { color: #38bdf8 !important; }
+
+        /* 2. Academic Blue */
+        .reveal.theme-academic { 
+            background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%) !important; 
+        }
+        .reveal.theme-academic :is(h1, h2, h3, p, li, div) { color: #0f172a !important; }
+        .reveal.theme-academic :is(h1, h2) { 
+            color: #1d4ed8 !important; 
+            border-bottom: 3px solid #1d4ed8; 
+            display: inline-block; 
+            padding-bottom: 10px; 
+        }
+
+        /* 3. Neon Cyber */
+        .reveal.theme-cyber { background: #09090b !important; }
+        .reveal.theme-cyber :is(h1, h2, h3, p, li, div) { color: #e4e4e7 !important; }
+        .reveal.theme-cyber :is(h1, h2) { 
+            color: #22d3ee !important; 
+            text-shadow: 0 0 15px #22d3ee !important; 
+        }
+
+        /* 4. Minimal Light */
+        .reveal.theme-minimal { background: #ffffff !important; }
+        .reveal.theme-minimal :is(h1, h2, h3, p, li, div) { color: #18181b !important; }
+
+        /* 5. Corporate Slate */
+        .reveal.theme-corporate { 
+            background: linear-gradient(to bottom, #334155, #0f172a) !important; 
+        }
+        .reveal.theme-corporate :is(h1, h2, h3, p, li, div) { color: #f8fafc !important; }
+        .reveal.theme-corporate :is(h1, h2) { 
+            color: #cbd5e1 !important; 
+            letter-spacing: 2px; 
+        }
+
+        /* 6. Sunset Gradient */
+        .reveal.theme-sunset { 
+            background: linear-gradient(135deg, #2e0249 0%, #a80038 100%) !important; 
+        }
+        .reveal.theme-sunset :is(h1, h2, h3, p, li, div) { color: #ffffff !important; }
+        .reveal.theme-sunset :is(h1, h2) { color: #fdc300 !important; }
+
+        /* 7. AMOLED Pure Black */
+        .reveal.theme-amoled { background: #000000 !important; }
+        .reveal.theme-amoled :is(h1, h2, h3, p, li, div) { color: #ffffff !important; }
+        .reveal.theme-amoled :is(h1, h2) { 
+            color: #ffffff !important; 
+            text-transform: uppercase; 
+            letter-spacing: 4px; 
+        }
+
+        /* 8. Hacker Matrix */
+        .reveal.theme-hacker { background: #000000 !important; }
+        .reveal.theme-hacker :is(h1, h2, h3, p, li, div) { 
+            color: #00ff00 !important; 
+            font-family: 'Courier New', monospace !important; 
+        }
+        .reveal.theme-hacker :is(h1, h2) { text-shadow: 0 0 5px #00ff00 !important; }
+
+        /* 9. Deep Ocean */
+        .reveal.theme-ocean { 
+            background: linear-gradient(180deg, #020024 0%, #090979 35%, #00d4ff 100%) !important; 
+        }
+        .reveal.theme-ocean :is(h1, h2, h3, p, li, div) { color: #ffffff !important; }
+        .reveal.theme-ocean :is(h1, h2) { color: #00ffff !important; }
+
+        /* 10. Crimson Blood */
+        .reveal.theme-blood { 
+            background: radial-gradient(circle, #590000 0%, #000000 100%) !important; 
+        }
+        .reveal.theme-blood :is(h1, h2, h3, p, li, div) { color: #ffcccc !important; }
+        .reveal.theme-blood :is(h1, h2) { color: #ff0000 !important; }
+
+        /* 11. Gold Luxury */
+        .reveal.theme-luxury { 
+            background: linear-gradient(135deg, #1f1f1f 0%, #000000 100%) !important; 
+        }
+        .reveal.theme-luxury :is(h1, h2, h3, p, li, div) { color: #f5f5f5 !important; }
+        .reveal.theme-luxury :is(h1, h2) { 
+            color: #ffd700 !important; 
+            font-family: 'Georgia', serif !important; 
+        }
+
+        /* 12. Midnight Purple */
+        .reveal.theme-purple { 
+            background: linear-gradient(to right, #240b36, #c31432) !important; 
+        }
+        .reveal.theme-purple :is(h1, h2, h3, p, li, div) { color: #ffffff !important; }
+
+        /* 13. Forest Green */
+        .reveal.theme-forest { 
+            background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364) !important; 
+        }
+        .reveal.theme-forest :is(h1, h2, h3, p, li, div) { color: #e2e8f0 !important; }
+        .reveal.theme-forest :is(h1, h2) { color: #4ade80 !important; }
+
+        /* 14. Vintage Paper */
+        .reveal.theme-vintage { background: #fdf6e3 !important; }
+        .reveal.theme-vintage :is(h1, h2, h3, p, li, div) { 
+            color: #586e75 !important; 
+            font-family: 'Palatino', serif !important; 
+        }
+        .reveal.theme-vintage :is(h1, h2) { 
+            color: #cb4b16 !important; 
+            border-bottom: 2px dashed #cb4b16; 
+        }
+
+        /* 15. Bubblegum Pop */
+        .reveal.theme-bubblegum { 
+            background: linear-gradient(45deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%) !important; 
+        }
+        .reveal.theme-bubblegum :is(h1, h2, h3, p, li, div) { color: #d81b60 !important; }
+
+        /* ==========================================================================
+           CUSTOM ANIMATIONS
+           ========================================================================== */
+        @keyframes customSpinIn { 
+            0% { transform: scale(0) rotate(-180deg); opacity: 0; } 
+            100% { transform: scale(1) rotate(0); opacity: 1; } 
+        }
+        @keyframes customBounceZoom { 
+            0% { transform: scale(0.3); opacity: 0; } 
+            50% { transform: scale(1.05); opacity: 1; } 
+            70% { transform: scale(0.9); } 
+            100% { transform: scale(1); } 
+        }
+        @keyframes customGlideLeft { 
+            0% { transform: translateX(100px); opacity: 0; } 
+            100% { transform: translateX(0); opacity: 1; } 
+        }
+        @keyframes customGlideRight { 
+            0% { transform: translateX(-100px); opacity: 0; } 
+            100% { transform: translateX(0); opacity: 1; } 
+        }
+        @keyframes customDrop { 
+            0% { transform: translateY(-100px); opacity: 0; } 
+            100% { transform: translateY(0); opacity: 1; } 
+        }
+
+        .fragment.spin-in.visible { animation: customSpinIn 0.8s ease-out forwards; }
+        .fragment.bounce-zoom.visible { animation: customBounceZoom 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+        .fragment.glide-left.visible { animation: customGlideLeft 0.6s ease-out forwards; }
+        .fragment.glide-right.visible { animation: customGlideRight 0.6s ease-out forwards; }
+        .fragment.drop-down.visible { animation: customDrop 0.6s ease-out forwards; }
+
+        /* ==========================================================================
+           UI EFFECTS (LASER & PROGRESS)
+           ========================================================================== */
+        .reveal .progress { 
+            height: 4px !important; 
+            background: rgba(0,0,0,0.2) !important; 
+            bottom: 0 !important; 
+        }
+        .reveal .progress span { 
+            background: #38bdf8 !important; 
+            box-shadow: 0 0 10px #38bdf8, 0 0 20px #38bdf8 !important; 
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1) !important; 
+        }
+        .laser-dot { 
+            position: fixed; 
+            width: 14px; 
+            height: 14px; 
+            background-color: #ff004c; 
+            border-radius: 50%; 
+            box-shadow: 0 0 15px #ff004c, 0 0 25px #ff004c; 
+            pointer-events: none; 
+            z-index: 99999; 
+            transform: translate(-50%, -50%); 
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out; 
+        }
+
+        /* ==========================================================================
+           TOOLBAR LAYOUT
+           ========================================================================== */
+        .toolbar { 
+            background-color: var(--toolbar-bg); 
+            border-bottom: 1px solid var(--border-color); 
+            display: flex; 
+            flex-direction: column; 
+            z-index: 10; 
+            transition: background 0.3s; 
+        }
+        .toolbar-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 10px 20px; 
+            border-bottom: 1px solid var(--border-color); 
+        }
+        .app-title { font-weight: 700; font-size: 1.2rem; color: var(--text-main); }
+        .app-subtitle { 
+            font-size: 0.65rem; 
+            color: var(--text-muted); 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            margin-top: 2px; 
+            font-weight: 600; 
+        }
+        
+        /* Export Buttons */
+        .export-group button { 
+            background-color: var(--accent); 
+            color: white; 
+            border: none; 
+            padding: 8px 16px; 
+            border-radius: 6px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            margin-left: 8px; 
+            transition: background 0.2s; 
+        }
+        .export-group button:hover { background-color: var(--accent-hover); }
+        .export-group button.btn-zip { background-color: #10b981; }
+        .export-group button.btn-zip:hover { background-color: #059669; }
+        
+        .toolbar-ribbon-wrapper { width: 100%; overflow-x: auto; padding-bottom: 5px; }
+        .toolbar-ribbon { display: flex; padding: 8px 20px; gap: 15px; width: max-content; margin: 0 auto; }
+        .tool-group { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            padding-right: 15px; 
+            border-right: 1px solid var(--border-color); 
+        }
+        .tool-group:last-child { border-right: none; }
+        .tool-group-label { 
+            font-size: 0.75rem; 
+            color: var(--text-muted); 
+            text-transform: uppercase; 
+            margin-right: 8px; 
+        }
+        
+        .tool-btn { 
+            background: transparent; 
+            border: 1px solid transparent; 
+            padding: 6px 12px; 
+            border-radius: 4px; 
+            color: var(--text-main); 
+            font-size: 0.9rem; 
+            outline: none; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+        }
+        .tool-btn:active, .tool-btn:focus { 
+            background: var(--bg-color); 
+            border-color: var(--border-color); 
+        }
+
+        /* ==========================================================================
+           CANVAS & ELEMENTS
+           ========================================================================== */
+        .workspace { 
+            flex-grow: 1; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 20px 20px 80px 20px; 
+            overflow: auto; 
+            gap: 20px; 
+        }
+        .slide-canvas { 
+            width: 960px; 
+            height: 540px; 
+            background-color: var(--slide-bg); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            border-radius: 8px; 
+            position: relative; 
+            max-width: 100%; 
+            max-height: 100%; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            overflow: hidden; 
+        }
+
+        .return-btn { 
+            background: linear-gradient(135deg, #2563eb, #1d4ed8); 
+            color: white; 
+            text-decoration: none; 
+            padding: 14px 40px; 
+            border-radius: 50px; 
+            font-weight: 800; 
+            font-size: 1.1rem; 
+            letter-spacing: 0.5px; 
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); 
+            transition: transform 0.2s, box-shadow 0.2s; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 8px; 
+            z-index: 10; 
+        }
+        .return-btn:active { transform: scale(0.95); box-shadow: 0 2px 10px rgba(37, 99, 235, 0.4); }
+
+        .reveal .slides section .draggable-item { 
+            position: absolute; top: 50%; left: 50%; 
+            transform: translate(-50%, -50%); 
+            padding: 10px 20px; color: inherit; 
+            border: 2px dashed transparent; 
+            z-index: 20; min-width: 100px; text-align: center; 
+        }
+        .reveal .slides section .is-active { 
+            outline: 3px solid #38bdf8 !important; 
+            outline-offset: 4px; border-radius: 4px; 
+        }
+        
+        .smart-bar { cursor: ns-resize !important; transition: background 0.2s; }
+        .smart-bar:hover { filter: brightness(1.2); }
+        
+        .smart-shape { 
+            display: flex; justify-content: center; align-items: center; 
+            color: white !important; font-weight: bold; background: #38bdf8; 
+        }
+        .shape-circle { width: 120px; height: 120px; border-radius: 50%; }
+        .shape-square { width: 120px; height: 120px; }
+        .shape-rect { width: 200px; height: 100px; }
+        .shape-triangle { 
+            width: 0; height: 0; 
+            border-left: 60px solid transparent; 
+            border-right: 60px solid transparent; 
+            border-bottom: 100px solid #38bdf8; 
+            background: transparent !important; 
+        }
+        .shape-triangle span { position: absolute; top: 50px; color: white; font-weight: bold; }
+
+        /* ==========================================================================
+           MIND MAP DIAGRAM CSS
+           ========================================================================== */
+        .mind-map-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 30px; z-index: 10; cursor: grab; }
+        .reveal .slides section .mind-map ul { display: flex !important; flex-direction: row !important; justify-content: center !important; padding-top: 20px !important; position: relative !important; margin: 0 !important; width: auto !important; }
+        .reveal .slides section .mind-map li { display: flex !important; flex-direction: column !important; align-items: center !important; list-style-type: none !important; position: relative !important; padding: 20px 10px 0 10px !important; margin: 0 !important; }
+        .reveal .slides section .mind-map li::before, .reveal .slides section .mind-map li::after { content: '' !important; position: absolute !important; top: 0 !important; right: 50% !important; border-top: 2px solid currentColor !important; width: 50% !important; height: 20px !important; }
+        .reveal .slides section .mind-map li::after { right: auto !important; left: 50% !important; border-left: 2px solid currentColor !important; }
+        .reveal .slides section .mind-map li:only-child::after, .reveal .slides section .mind-map li:only-child::before { display: none !important; }
+        .reveal .slides section .mind-map li:only-child { padding-top: 0 !important; }
+        .reveal .slides section .mind-map li:first-child::before, .reveal .slides section .mind-map li:last-child::after { border: 0 none !important; }
+        .reveal .slides section .mind-map li:last-child::before { border-right: 2px solid currentColor !important; border-radius: 0 6px 0 0 !important; }
+        .reveal .slides section .mind-map li:first-child::after { border-radius: 6px 0 0 0 !important; }
+        .reveal .slides section .mind-map ul ul::before { content: '' !important; position: absolute !important; top: 0 !important; left: 50% !important; border-left: 2px solid currentColor !important; width: 0 !important; height: 20px !important; }
+        .reveal .slides section .smart-node { background: #2563eb !important; color: white !important; padding: 12px 20px !important; border-radius: 6px !important; display: inline-block !important; font-weight: 600 !important; font-size: 1.1rem !important; box-shadow: 0 4px 10px rgba(0,0,0,0.15) !important; outline: none !important; position: relative !important; z-index: 2 !important; margin: 0 !important; }
+    </style>
+</head>
+<body>
+
+    <!-- STARTUP MODAL -->
+    <div id="startup-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-box">
+            <h2>Session Found</h2>
+            <p>We found an auto-saved presentation in your local memory. Would you like to restore it or start fresh?</p>
+            <button id="btn-restore" class="modal-btn btn-primary">Restore File</button>
+            <button id="btn-fresh" class="modal-btn btn-secondary">Start Fresh</button>
+        </div>
+    </div>
+
+    <!-- SIGNATURE BRANDING -->
+    <div class="rare-kartik-footer">© 2026 Kartik Chouhan | All rights Reserved</div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+        <div class="toolbar-header">
+            <div>
+                <div class="app-title">Presentify</div>
+                <div class="app-subtitle">Because good ideas deserve good presentation.</div>
+            </div>
+            <div class="export-group">
+                <button class="tool-btn" id="btn-ui-theme" style="margin-right: 15px; font-weight: bold;">🌙 AMOLED UI</button>
+                <button id="btn-export-pdf">📄 Export PDF</button>
+                <button id="btn-export-zip" class="btn-zip">📦 Export ZIP</button>
+            </div>
+        </div>
+        
+        <div class="toolbar-ribbon-wrapper">
+            <div class="toolbar-ribbon">
+                <!-- Insert Menu -->
+                <div class="tool-group">
+                    <span class="tool-group-label">Insert</span>
+                    <select class="tool-btn" id="btn-add-template" style="width: 130px;">
+                        <option value="" disabled selected>➕ Layouts (15)</option>
+                        <option value="title">👑 Title Slide</option>
+                        <option value="bullets">📋 Bullet Points</option>
+                        <option value="quote">💬 Huge Quote</option>
+                        <option value="metric">📊 Big Data Number</option>
+                        <option value="barchart">📈 Live Bar Chart</option>
+                        <option value="split">🌗 2-Column Split</option>
+                        <option value="code">💻 Code Editor</option>
+                        <option value="funnel">🌪️ Funnel</option>
+                        <option value="shape-circle">🔵 Circle</option>
+                        <option value="shape-square">🟥 Square</option>
+                        <option value="shape-rect">▭ Rectangle</option>
+                        <option value="shape-triangle">🔺 Triangle</option>
+                        <option value="blank">⬜ Blank Canvas</option>
+                    </select>
+                    <button class="tool-btn" id="btn-add-text">📝 Text</button>
+                    <button class="tool-btn" id="btn-add-graph">📊 Diagram</button>
+                    <input type="file" id="image-upload" accept="image/*" style="display: none;">
+                    <button class="tool-btn" id="btn-add-image">🖼️ Image</button>
+                </div>
+
+                <!-- Format Menu -->
+                <div class="tool-group">
+                    <span class="tool-group-label">Format</span>
+                    <select class="tool-btn" id="font-selector" style="width: 120px;">
+                        <option value="" disabled selected>Abc Fonts (15)</option>
+                        <option value="-apple-system, sans-serif">System UI</option>
+                        <option value="Arial, sans-serif">Arial Clean</option>
+                        <option value="'Arial Black', sans-serif">Arial Black</option>
+                        <option value="'Times New Roman', serif">Times Academic</option>
+                        <option value="'Georgia', serif">Georgia Elegant</option>
+                        <option value="'Garamond', serif">Garamond Book</option>
+                        <option value="'Courier New', monospace">Courier Code</option>
+                        <option value="'Lucida Console', monospace">Lucida Terminal</option>
+                        <option value="'Impact', sans-serif">Impact Heavy</option>
+                        <option value="'Trebuchet MS', sans-serif">Trebuchet Data</option>
+                        <option value="'Verdana', sans-serif">Verdana Wide</option>
+                        <option value="'Tahoma', sans-serif">Tahoma Sharp</option>
+                        <option value="'Century Gothic', sans-serif">Century Modern</option>
+                        <option value="'Comic Sans MS', cursive">Comic Meme</option>
+                        <option value="'Brush Script MT', cursive">Brush Signature</option>
+                    </select>
+                    <button class="tool-btn" id="btn-format-up">A+</button>
+                    <button class="tool-btn" id="btn-format-down">A-</button>
+                    <button class="tool-btn" id="btn-format-bold"><b>B</b></button>
+                    <button class="tool-btn" id="btn-format-color">🎨 Color</button>
+                </div>
+
+                <!-- Design Menu -->
+                <div class="tool-group">
+                    <span class="tool-group-label">Design</span>
+                    <select class="tool-btn" id="theme-selector" style="width: 130px;">
+                        <option value="theme-cinematic">Cinematic Dark</option>
+                        <option value="theme-amoled">AMOLED Pure Black</option>
+                        <option value="theme-academic">Academic Blue</option>
+                        <option value="theme-hacker">Hacker Matrix</option>
+                        <option value="theme-cyber">Neon Cyber</option>
+                        <option value="theme-ocean">Deep Ocean</option>
+                        <option value="theme-corporate">Corporate Slate</option>
+                        <option value="theme-luxury">Gold Luxury</option>
+                        <option value="theme-sunset">Sunset Glow</option>
+                        <option value="theme-blood">Crimson Blood</option>
+                        <option value="theme-purple">Midnight Purple</option>
+                        <option value="theme-forest">Forest Green</option>
+                        <option value="theme-vintage">Vintage Paper</option>
+                        <option value="theme-bubblegum">Bubblegum Pop</option>
+                        <option value="theme-minimal">Minimal Light</option>
+                    </select>
+                </div>
+                
+                <!-- Presenter Utilities -->
+                <div class="tool-group">
+                    <span class="tool-group-label">Present</span>
+                    <select class="tool-btn" id="transition-selector" style="width: 110px;">
+                        <option value="slide">Slide (Morph)</option>
+                        <option value="fade">Fade</option>
+                        <option value="zoom">Zoom</option>
+                        <option value="convex">3D Convex</option>
+                        <option value="concave">3D Concave</option>
+                        <option value="none">Instant</option>
+                    </select>
+                    <select class="tool-btn" id="element-anim-selector" style="width: 110px;">
+                        <option value="" disabled selected>✨ Element Anim</option>
+                        <option value="fade-up">Fly Up</option>
+                        <option value="fade-down">Fly Down</option>
+                        <option value="fade-left">Fly Left</option>
+                        <option value="fade-right">Fly Right</option>
+                        <option value="spin-in">🌪️ Spin In</option>
+                        <option value="bounce-zoom">🏀 Bounce Zoom</option>
+                        <option value="glide-left">⛸️ Glide Left</option>
+                        <option value="glide-right">⛸️ Glide Right</option>
+                        <option value="drop-down">⚓ Drop Down</option>
+                    </select>
+                    <button class="tool-btn" id="btn-laser">🔦 Laser Off</button>
+                    <button class="tool-btn" id="btn-fullscreen" style="font-weight: 800; color: #10b981;">📺 Play</button>
+                </div>
+            </div>
+        </div>
+    </div>
+        
+    <!-- CANVAS WORKSPACE -->
+    <div class="workspace">
+        <div class="slide-canvas" id="main-canvas">
+            <div class="reveal theme-cinematic" id="reveal-core">
+                <div class="slides" id="slide-container">
+                    <!-- Default Initial Slide -->
+                    <section>
+                        <h1 class="draggable-item" contenteditable="true" style="font-size: 80px;">Presentation Title</h1>
+                        <h3 class="draggable-item" contenteditable="true" style="top: 65%; color: inherit;">Tap to edit text</h3>
+                    </section>
+                </div>
+            </div>
+        </div>
+        
+        <a href="https://rarekartik.github.io/" class="return-btn" target="_blank" rel="noopener noreferrer">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            Return to Website
+        </a>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"></script>
+    
+    <script>
+        /* ==========================================================================
+           CORE LOGIC & AUTO-SAVE
+           ========================================================================== */
+        const slideContainer = document.getElementById('slide-container');
+        const themeSelector = document.getElementById('theme-selector');
+        const revealCore = document.getElementById('reveal-core');
+        const modal = document.getElementById('startup-modal');
+        
+        const savedSlides = localStorage.getItem('rarekartik_slides');
+        const savedTheme = localStorage.getItem('rarekartik_theme');
+
+        // Check LocalStorage and show Modal
+        if (savedSlides) {
+            modal.style.display = 'flex';
+        }
+
+        document.getElementById('btn-restore').addEventListener('click', () => {
+            slideContainer.innerHTML = savedSlides;
+            if (savedTheme) { 
+                themeSelector.value = savedTheme; 
+                revealCore.className = `reveal ${savedTheme}`; 
+            }
+            modal.style.display = 'none';
+            reInitializeReveal();
+        });
+
+        document.getElementById('btn-fresh').addEventListener('click', () => {
+            localStorage.removeItem('rarekartik_slides');
+            localStorage.removeItem('rarekartik_theme');
+            modal.style.display = 'none';
+            reInitializeReveal();
+        });
+
+        function reInitializeReveal() {
+            // Unbind to prevent duplicate listeners
+            if(Reveal.isReady()) Reveal.destroy();
+            Reveal.initialize({ embedded: true, hash: true, controls: false, progress: true, center: false });
+            document.querySelectorAll('.draggable-item').forEach(attachDragLogic);
+        }
+        
+        // Initial setup if no save exists
+        if(!savedSlides) reInitializeReveal();
+
+        const triggerAutoSave = () => {
+            if(modal.style.display === 'flex') return; // Don't save while modal is open
+            const clone = slideContainer.cloneNode(true);
+            clone.querySelectorAll('.is-active').forEach(el => el.classList.remove('is-active'));
+            localStorage.setItem('rarekartik_slides', clone.innerHTML);
+            localStorage.setItem('rarekartik_theme', themeSelector.value);
+        };
+        
+        document.getElementById('main-canvas').addEventListener('input', triggerAutoSave);
+        document.getElementById('main-canvas').addEventListener('pointerup', () => setTimeout(triggerAutoSave, 100));
+
+        /* ==========================================================================
+           APP UI DARK MODE (IDE TOGGLE)
+           ========================================================================== */
+        document.getElementById('btn-ui-theme').addEventListener('click', function() {
+            const root = document.documentElement;
+            if(root.style.getPropertyValue('--bg-color') === '#000000') {
+                root.style.setProperty('--bg-color', '#f3f4f6');
+                root.style.setProperty('--toolbar-bg', '#ffffff');
+                root.style.setProperty('--text-main', '#1f2937');
+                root.style.setProperty('--border-color', '#e5e7eb');
+                this.innerText = '🌙 AMOLED UI';
+                this.style.color = '';
+            } else {
+                root.style.setProperty('--bg-color', '#000000');
+                root.style.setProperty('--toolbar-bg', '#0a0a0a');
+                root.style.setProperty('--text-main', '#ffffff');
+                root.style.setProperty('--border-color', '#333333');
+                this.innerText = '☀️ Light UI';
+                this.style.color = '#38bdf8';
+            }
+        });
+
+        document.getElementById('btn-fullscreen').addEventListener('click', () => {
+            const canvas = document.getElementById('main-canvas');
+            if (canvas.requestFullscreen) canvas.requestFullscreen();
+            else if (canvas.webkitRequestFullscreen) canvas.webkitRequestFullscreen();
+        });
+
+        /* ==========================================================================
+           PRESENTER LASER & TOUCH OVERRIDE
+           ========================================================================== */
+        let isLaserMode = false;
+        const laserBtn = document.getElementById('btn-laser');
+        
+        laserBtn.addEventListener('click', () => {
+            isLaserMode = !isLaserMode;
+            laserBtn.innerText = isLaserMode ? '🔴 Laser On' : '🔦 Laser Off';
+            laserBtn.style.color = isLaserMode ? '#ff004c' : '';
+            if(isLaserMode) document.querySelectorAll('.is-active').forEach(el => el.classList.remove('is-active'));
+            
+            // BUG FIX: Completely disable Reveal's touch swiping when Laser is active
+            Reveal.configure({ touch: !isLaserMode });
+        });
+
+        document.getElementById('main-canvas').addEventListener('pointerdown', function(e) {
+            // BUG FIX: Stop the touch from bubbling down to Reveal's swipe engine
+            if (isLaserMode) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+
+        document.getElementById('main-canvas').addEventListener('pointermove', function(e) {
+            if (!isLaserMode) return;
+            e.preventDefault();
+            e.stopPropagation(); // Stop swipe events
+            
+            const dot = document.createElement('div');
+            dot.className = 'laser-dot';
+            dot.style.left = e.clientX + 'px'; 
+            dot.style.top = e.clientY + 'px';
+            document.body.appendChild(dot);
+            
+            requestAnimationFrame(() => { 
+                dot.style.opacity = '0'; 
+                dot.style.transform = 'translate(-50%, -50%) scale(0.1)'; 
+            });
+            setTimeout(() => dot.remove(), 400);
+        });
+
+        /* ==========================================================================
+           DRAG, DROP & FORMATTING LOGIC
+           ========================================================================== */
+        let selectedItem = null; 
+        let activeBar = null; let startBarY = 0; let startBarHeight = 0;
+
+        document.addEventListener('pointerdown', function(e) {
+            if (isLaserMode) return; 
+            if (!e.target.closest('.slide-canvas')) return; // Ignore if clicking toolbar
+            
+            if (e.target.classList.contains('smart-bar')) {
+                activeBar = e.target; 
+                startBarY = e.clientY; 
+                startBarHeight = parseFloat(activeBar.style.height) || 10;
+                e.stopPropagation(); return;
+            }
+
+            const target = e.target.closest('[contenteditable], .draggable-item, .smart-node');
+            if (target) { 
+                document.querySelectorAll('.is-active').forEach(el => el.classList.remove('is-active'));
+                selectedItem = target; 
+                selectedItem.classList.add('is-active'); 
+            } else if (e.target.closest('.slides')) {
+                document.querySelectorAll('.is-active').forEach(el => el.classList.remove('is-active'));
+                selectedItem = null;
+            }
+        });
+
+        document.addEventListener('pointermove', function(e) {
+            if (isLaserMode) return;
+            if (activeBar) {
+                e.preventDefault();
+                let dy = startBarY - e.clientY; 
+                let newHeight = Math.max(5, Math.min(100, startBarHeight + (dy / 2))); 
+                activeBar.style.height = newHeight + '%';
+                let val = activeBar.querySelector('.bar-value');
+                if(val) val.innerText = Math.round(newHeight) + '%';
+            }
+        });
+        document.addEventListener('pointerup', () => { activeBar = null; });
+
+        themeSelector.addEventListener('change', function() { 
+            revealCore.className = `reveal ${this.value}`; 
+            triggerAutoSave(); 
+        });
+        
+        document.getElementById('font-selector').addEventListener('change', function() {
+            if(!selectedItem) return alert("Tap a text box first!");
+            selectedItem.style.setProperty('font-family', this.value, 'important');
+            this.value = ""; triggerAutoSave();
+        });
+
+        /* ==========================================================================
+           15 GOD-LEVEL SLIDE TEMPLATES
+           ========================================================================== */
+        document.getElementById('btn-add-template').addEventListener('change', function() {
+            const newSlide = document.createElement('section');
+            const layouts = {
+                'title': `<h1 class="draggable-item" contenteditable="true" style="font-size: 80px;">Main Title</h1><h3 class="draggable-item" contenteditable="true" style="top: 65%; color: inherit;">Subtitle</h3>`,
+                'bullets': `<h2 class="draggable-item" contenteditable="true" style="top: 20%;">Key Points</h2><ul style="margin-top: 150px;"><li contenteditable="true">Data Point 1</li><li contenteditable="true">Data Point 2</li></ul>`,
+                'quote': `<h1 class="draggable-item" contenteditable="true" style="font-style: italic; font-size: 60px;">"Code is like humor. When you have to explain it, it’s bad."</h1>`,
+                'metric': `<h1 class="draggable-item" contenteditable="true" style="font-size: 120px; font-weight: bold; color: inherit;">85%</h1><h3 class="draggable-item" contenteditable="true" style="top: 65%;">Accuracy Achieved</h3>`,
+                'barchart': `<div class="draggable-item" style="width: 700px; height: 350px;"><h3 contenteditable="true" style="margin-bottom: 30px;">Data Distribution</h3><div style="display: flex; height: 100%; align-items: flex-end; gap: 25px; border-bottom: 4px solid currentColor; border-left: 4px solid currentColor; padding: 10px;"><div style="flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end;"><div class="smart-bar" style="width: 100%; height: 30%; background: #38bdf8; border-radius: 6px 6px 0 0; position: relative;"><span class="bar-value" style="position: absolute; top: -35px; width: 100%; text-align: center; font-weight: bold;">30%</span></div><div contenteditable="true" style="margin-top: 15px; font-weight: bold;">Set 1</div></div><div style="flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end;"><div class="smart-bar" style="width: 100%; height: 75%; background: #10b981; border-radius: 6px 6px 0 0; position: relative;"><span class="bar-value" style="position: absolute; top: -35px; width: 100%; text-align: center; font-weight: bold;">75%</span></div><div contenteditable="true" style="margin-top: 15px; font-weight: bold;">Set 2</div></div><div style="flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end;"><div class="smart-bar" style="width: 100%; height: 50%; background: #f43f5e; border-radius: 6px 6px 0 0; position: relative;"><span class="bar-value" style="position: absolute; top: -35px; width: 100%; text-align: center; font-weight: bold;">50%</span></div><div contenteditable="true" style="margin-top: 15px; font-weight: bold;">Set 3</div></div></div></div>`,
+                'split': `<div class="draggable-item" style="width: 800px; display: flex; justify-content: space-between;"><div style="width: 45%; border-right: 2px solid currentColor; padding-right: 20px;"><h2 contenteditable="true">Pros</h2><p contenteditable="true">Fast</p><p contenteditable="true">Secure</p></div><div style="width: 45%;"><h2 contenteditable="true">Cons</h2><p contenteditable="true">Complex</p><p contenteditable="true">Costly</p></div></div>`,
+                'code': `<div class="draggable-item" style="background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 8px; font-family: monospace; text-align: left; width: 600px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);"><div style="display: flex; gap: 8px; margin-bottom: 15px;"><div style="width:12px;height:12px;background:#ff5f56;border-radius:50%;"></div><div style="width:12px;height:12px;background:#ffbd2e;border-radius:50%;"></div><div style="width:12px;height:12px;background:#27c93f;border-radius:50%;"></div></div><pre contenteditable="true" style="margin: 0; outline: none; white-space: pre-wrap;"><code>function analyzeData() {\n  return "Data Science Engine Ready";\n}</code></pre></div>`,
+                'funnel': `<div class="draggable-item" style="width: 400px; display: flex; flex-direction: column; gap: 10px; align-items: center;"><div contenteditable="true" style="background:#38bdf8; width:100%; padding:15px; color:white; font-weight:bold;">10,000 Visitors</div><div contenteditable="true" style="background:#10b981; width:75%; padding:15px; color:white; font-weight:bold;">1,000 Leads</div><div contenteditable="true" style="background:#f59e0b; width:50%; padding:15px; color:white; font-weight:bold;">100 Customers</div></div>`,
+                'shape-circle': `<div class="draggable-item smart-shape shape-circle" contenteditable="true">A</div>`,
+                'shape-square': `<div class="draggable-item smart-shape shape-square" contenteditable="true">B</div>`,
+                'shape-rect': `<div class="draggable-item smart-shape shape-rect" contenteditable="true">Process</div>`,
+                'shape-triangle': `<div class="draggable-item shape-triangle"><span contenteditable="true">C</span></div>`,
+                'blank': `<h2 class="draggable-item" contenteditable="true" style="font-size: 40px;">Start typing...</h2>`
+            };
+            newSlide.innerHTML = layouts[this.value];
+            slideContainer.appendChild(newSlide);
+            Reveal.sync(); Reveal.slide(Reveal.getTotalSlides() - 1);
+            newSlide.querySelectorAll('.draggable-item').forEach(attachDragLogic);
+            this.value = ""; triggerAutoSave();
+        });
+
+        // Universal Element Drag Logic
+        function attachDragLogic(element) {
+            let isDragging = false, startX, startY, startLeft, startTop;
+            element.addEventListener('pointerdown', function(e) {
+                if (isLaserMode || e.target.classList.contains('smart-bar')) return;
+                if (document.activeElement === element && element.tagName !== 'IMG' && !element.classList.contains('smart-shape')) return; 
+                isDragging = true;
+                let scale = Reveal.getScale();
+                startLeft = parseFloat(element.style.left) || 50; startTop = parseFloat(element.style.top) || 50;
+                startX = e.clientX / scale; startY = e.clientY / scale;
+                e.stopPropagation(); 
+            });
+            document.addEventListener('pointermove', function(e) {
+                if (!isDragging || isLaserMode) return;
+                e.preventDefault();
+                let scale = Reveal.getScale();
+                element.style.left = `calc(${startLeft}% + ${(e.clientX / scale) - startX}px)`;
+                element.style.top = `calc(${startTop}% + ${(e.clientY / scale) - startY}px)`;
+                element.style.transform = 'none'; 
+            });
+            document.addEventListener('pointerup', () => { isDragging = false; });
+        }
+        document.querySelectorAll('.draggable-item').forEach(attachDragLogic);
+
+        // Text & Image Injectors
+        document.getElementById('btn-add-text').addEventListener('click', function() {
+            const newText = document.createElement('div');
+            newText.className = 'draggable-item is-active'; 
+            newText.setAttribute('contenteditable', 'true');
+            newText.innerText = 'New Text Box';
+            newText.style.fontSize = '40px'; 
+            Reveal.getCurrentSlide().appendChild(newText);
+            selectedItem = newText; attachDragLogic(newText); triggerAutoSave();
+        });
+
+        document.getElementById('btn-add-image').addEventListener('click', () => document.getElementById('image-upload').click());
+        document.getElementById('image-upload').addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result; 
+                    img.className = 'draggable-item is-active';
+                    img.style.maxWidth = '60%'; 
+                    Reveal.getCurrentSlide().appendChild(img);
+                    selectedItem = img; attachDragLogic(img); triggerAutoSave();
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+
+        // Text Size and Color Formatting
+        document.getElementById('btn-format-up').addEventListener('click', () => {
+            if(!selectedItem) return alert("Tap an item first!");
+            let currentSize = parseInt(selectedItem.style.fontSize) || parseInt(window.getComputedStyle(selectedItem).fontSize) || 40;
+            selectedItem.style.setProperty('font-size', (currentSize + 10) + 'px', 'important'); 
+        });
+        document.getElementById('btn-format-down').addEventListener('click', () => {
+            if(!selectedItem) return alert("Tap an item first!");
+            let currentSize = parseInt(selectedItem.style.fontSize) || parseInt(window.getComputedStyle(selectedItem).fontSize) || 40;
+            selectedItem.style.setProperty('font-size', (currentSize - 10) + 'px', 'important'); 
+        });
+        document.getElementById('btn-format-bold').addEventListener('click', () => {
+            if(!selectedItem) return;
+            let w = window.getComputedStyle(selectedItem).fontWeight;
+            selectedItem.style.setProperty('font-weight', (w === '700' || w === 'bold') ? 'normal' : 'bold', 'important');
+        });
+        const brandColors = ['inherit', '#38bdf8', '#f43f5e', '#10b981', '#f59e0b', '#1d4ed8', '#000000', '#ffffff', '#a855f7'];
+        document.getElementById('btn-format-color').addEventListener('click', () => {
+            if(!selectedItem) return;
+            let currentBg = selectedItem.style.color || selectedItem.style.backgroundColor || 'inherit';
+            let nextColor = brandColors[(brandColors.indexOf(currentBg) + 1) % brandColors.length] || brandColors[1];
+            if(selectedItem.classList.contains('smart-shape') && !selectedItem.classList.contains('shape-triangle')) {
+                selectedItem.style.setProperty('background', nextColor, 'important');
+            } else if (selectedItem.classList.contains('shape-triangle')) {
+                selectedItem.style.setProperty('border-bottom-color', nextColor, 'important');
+            } else {
+                selectedItem.style.setProperty('color', nextColor, 'important'); 
+            }
+        });
+
+        /* ==========================================================================
+           DIAGRAM ENGINE
+           ========================================================================== */
+        document.getElementById('btn-add-graph').addEventListener('click', function() {
+            const currentSlide = Reveal.getCurrentSlide();
+            const list = currentSlide.querySelector('ul');
+            const colors = ['#2563eb', '#059669', '#dc2626', '#7c3aed', '#d97706', '#1f2937'];
+
+            function createNode(text) {
+                const node = document.createElement('div');
+                node.className = 'smart-node'; node.setAttribute('contenteditable', 'true');
+                node.innerText = text; node.dataset.colorIndex = 0; 
+                node.addEventListener('contextmenu', function(e) {
+                    e.preventDefault(); 
+                    let nextIndex = parseInt(this.dataset.colorIndex) + 1;
+                    if (nextIndex >= colors.length) nextIndex = 0; 
+                    this.dataset.colorIndex = nextIndex;
+                    this.style.setProperty('background', colors[nextIndex], 'important');
+                });
+                return node;
+            }
+
+            const container = document.createElement('div'); container.className = 'mind-map-container is-active'; 
+            const mindMap = document.createElement('div'); mindMap.className = 'mind-map';
+            const topUl = document.createElement('ul'); const topLi = document.createElement('li');
+            topLi.appendChild(createNode('Main Topic')); const childrenUl = document.createElement('ul');
+
+            if (list) {
+                list.querySelectorAll('li').forEach(item => { const childLi = document.createElement('li'); childLi.appendChild(createNode(item.innerText)); childrenUl.appendChild(childLi); });
+                topLi.appendChild(childrenUl); topUl.appendChild(topLi); mindMap.appendChild(topUl); container.appendChild(mindMap); list.parentNode.replaceChild(container, list);
+            } else {
+                for(let i=1; i<=3; i++) { const childLi = document.createElement('li'); childLi.appendChild(createNode('Branch ' + i)); childrenUl.appendChild(childLi); }
+                topLi.appendChild(childrenUl); topUl.appendChild(topLi); mindMap.appendChild(topUl); container.appendChild(mindMap); currentSlide.appendChild(container);
+            }
+            selectedItem = container; attachDragLogic(container); Reveal.sync(); triggerAutoSave();
+        });
+
+        /* ==========================================================================
+           SLIDE ANIMATIONS
+           ========================================================================== */
+        Reveal.on('slidechanged', event => {
+            const currentTransition = event.currentSlide.getAttribute('data-transition');
+            document.getElementById('transition-selector').value = currentTransition || Reveal.getConfig().transition || 'slide';
+        });
+
+        document.getElementById('transition-selector').addEventListener('change', function() {
+            Reveal.getCurrentSlide().setAttribute('data-transition', this.value);
+            this.style.backgroundColor = '#10b981'; this.style.color = 'white';
+            setTimeout(() => { this.style.backgroundColor = ''; this.style.color = ''; }, 500); triggerAutoSave();
+        });
+
+        document.getElementById('element-anim-selector').addEventListener('change', function() {
+            if(!selectedItem) { this.value = ""; return alert("Tap an element first to animate it!"); }
+            selectedItem.className = selectedItem.className.replace(/\b(fragment|fade-up|fade-down|fade-left|fade-right|spin-in|bounce-zoom|glide-left|glide-right|drop-down)\b/g, '');
+            selectedItem.classList.add('fragment', this.value);
+            selectedItem.style.border = '2px solid #10b981';
+            setTimeout(() => { selectedItem.style.border = ''; }, 1000);
+            this.value = ""; triggerAutoSave();
+        });
+
+        /* ==========================================================================
+           ZIP EXPORT ENGINE (REWRITES HTML & SAVES IMAGES)
+           ========================================================================== */
+        document.getElementById('btn-export-zip').addEventListener('click', function() {
+            if(typeof JSZip === 'undefined') { return alert("Please connect to the internet to load the ZIP Export Library."); }
+            
+            const zip = new JSZip();
+            const imagesFolder = zip.folder("images");
+            
+            // Clone DOM to safely modify
+            const slideContainer = document.getElementById('slide-container').cloneNode(true);
+            
+            // Clean up builder artifacts
+            slideContainer.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+            slideContainer.querySelectorAll('.is-active').forEach(el => el.classList.remove('is-active'));
+            
+            // Extract Images and save as binary files in ZIP
+            let imgCounter = 1;
+            slideContainer.querySelectorAll('img').forEach(img => {
+                let src = img.src;
+                if(src.startsWith('data:image')) {
+                    // Split base64 header from raw data
+                    let base64Data = src.split(',')[1];
+                    let extensionMatch = src.split(';')[0].match(/jpeg|png|gif/);
+                    let ext = extensionMatch ? extensionMatch[0] : 'png';
+                    let filename = `img_${imgCounter}.${ext}`;
+                    
+                    // Add binary image to ZIP folder
+                    imagesFolder.file(filename, base64Data, {base64: true});
+                    
+                    // Rewrite HTML src to point to the local folder
+                    img.src = `images/${filename}`;
+                    imgCounter++;
+                }
+            });
+
+            const currentTheme = document.getElementById('theme-selector').value;
+            
+            // Construct the clean standalone HTML String
+            const finalHTML = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ProDeck Presentation | RareKartik</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.css"><style>html, body { width: 100vw; height: 100vh; margin: 0; padding: 0; overflow: hidden; background-color: #000; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; } .reveal .slide-background { background: transparent !important; } .reveal.theme-cinematic { background: radial-gradient(circle at center, #1e293b 0%, #020617 100%); } .reveal.theme-cinematic :is(h1, h2, h3, p, li, div) { color: #f8fafc !important; text-shadow: 0 4px 10px rgba(0,0,0,0.5) !important; } .reveal.theme-cinematic :is(h1, h2) { color: #38bdf8 !important; } .reveal.theme-academic { background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%); } .reveal.theme-academic :is(h1, h2, h3, p, li, div) { color: #0f172a !important; } .reveal.theme-academic :is(h1, h2) { color: #1d4ed8 !important; border-bottom: 3px solid #1d4ed8; display: inline-block; padding-bottom: 10px; } .reveal.theme-cyber { background: #09090b; } .reveal.theme-cyber :is(h1, h2, h3, p, li, div) { color: #e4e4e7 !important; } .reveal.theme-cyber :is(h1, h2) { color: #22d3ee !important; text-shadow: 0 0 15px #22d3ee !important; } .reveal.theme-minimal { background: #ffffff; } .reveal.theme-minimal :is(h1, h2, h3, p, li, div) { color: #18181b !important; } .reveal.theme-corporate { background: linear-gradient(to bottom, #334155, #0f172a); } .reveal.theme-corporate :is(h1, h2, h3, p, li, div) { color: #f8fafc !important; } .reveal.theme-corporate :is(h1, h2) { color: #cbd5e1 !important; letter-spacing: 2px; } .reveal.theme-sunset { background: linear-gradient(135deg, #2e0249 0%, #a80038 100%); } .reveal.theme-sunset :is(h1, h2, h3, p, li, div) { color: #ffffff !important; } .reveal.theme-sunset :is(h1, h2) { color: #fdc300 !important; } .reveal.theme-amoled { background: #000000; } .reveal.theme-amoled :is(h1, h2, h3, p, li, div) { color: #ffffff !important; } .reveal.theme-amoled :is(h1, h2) { color: #ffffff !important; text-transform: uppercase; letter-spacing: 4px; } .reveal.theme-hacker { background: #000000; } .reveal.theme-hacker :is(h1, h2, h3, p, li, div) { color: #00ff00 !important; font-family: 'Courier New', monospace !important; } .reveal.theme-hacker :is(h1, h2) { text-shadow: 0 0 5px #00ff00 !important; } .reveal.theme-ocean { background: linear-gradient(180deg, #020024 0%, #090979 35%, #00d4ff 100%); } .reveal.theme-ocean :is(h1, h2, h3, p, li, div) { color: #ffffff !important; } .reveal.theme-ocean :is(h1, h2) { color: #00ffff !important; } .reveal.theme-blood { background: radial-gradient(circle, #590000 0%, #000000 100%); } .reveal.theme-blood :is(h1, h2, h3, p, li, div) { color: #ffcccc !important; } .reveal.theme-blood :is(h1, h2) { color: #ff0000 !important; } .reveal.theme-luxury { background: linear-gradient(135deg, #1f1f1f 0%, #000000 100%); } .reveal.theme-luxury :is(h1, h2, h3, p, li, div) { color: #f5f5f5 !important; } .reveal.theme-luxury :is(h1, h2) { color: #ffd700 !important; font-family: 'Georgia', serif !important; } .reveal.theme-purple { background: linear-gradient(to right, #240b36, #c31432); } .reveal.theme-purple :is(h1, h2, h3, p, li, div) { color: #ffffff !important; } .reveal.theme-forest { background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364); } .reveal.theme-forest :is(h1, h2, h3, p, li, div) { color: #e2e8f0 !important; } .reveal.theme-forest :is(h1, h2) { color: #4ade80 !important; } .reveal.theme-vintage { background: #fdf6e3; } .reveal.theme-vintage :is(h1, h2, h3, p, li, div) { color: #586e75 !important; font-family: 'Palatino', serif !important; } .reveal.theme-vintage :is(h1, h2) { color: #cb4b16 !important; border-bottom: 2px dashed #cb4b16; } .reveal.theme-bubblegum { background: linear-gradient(45deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%); } .reveal.theme-bubblegum :is(h1, h2, h3, p, li, div) { color: #d81b60 !important; } @keyframes customSpinIn { 0% { transform: scale(0) rotate(-180deg); opacity: 0; } 100% { transform: scale(1) rotate(0); opacity: 1; } } @keyframes customBounceZoom { 0% { transform: scale(0.3); opacity: 0; } 50% { transform: scale(1.05); opacity: 1; } 70% { transform: scale(0.9); } 100% { transform: scale(1); } } @keyframes customGlideLeft { 0% { transform: translateX(100px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } } @keyframes customGlideRight { 0% { transform: translateX(-100px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } } @keyframes customDrop { 0% { transform: translateY(-100px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } } .fragment.spin-in.visible { animation: customSpinIn 0.8s ease-out forwards; } .fragment.bounce-zoom.visible { animation: customBounceZoom 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; } .fragment.glide-left.visible { animation: customGlideLeft 0.6s ease-out forwards; } .fragment.glide-right.visible { animation: customGlideRight 0.6s ease-out forwards; } .fragment.drop-down.visible { animation: customDrop 0.6s ease-out forwards; } .reveal .progress { height: 4px !important; background: rgba(0,0,0,0.2) !important; bottom: 0 !important; } .reveal .progress span { background: #38bdf8 !important; box-shadow: 0 0 10px #38bdf8, 0 0 20px #38bdf8 !important; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1) !important; } .draggable-item { position: absolute; border: none !important; } .smart-shape { display: flex; justify-content: center; align-items: center; color: white !important; font-weight: bold; background: #38bdf8; } .shape-circle { width: 120px; height: 120px; border-radius: 50%; } .shape-square { width: 120px; height: 120px; } .shape-rect { width: 200px; height: 100px; } .shape-triangle { width: 0; height: 0; border-left: 60px solid transparent; border-right: 60px solid transparent; border-bottom: 100px solid #38bdf8; background: transparent !important; } .shape-triangle span { position: absolute; top: 50px; color: white; font-weight: bold; } .mind-map-container { position: absolute; padding: 30px; } .reveal .slides section .mind-map ul { display: flex !important; flex-direction: row !important; justify-content: center !important; padding-top: 20px !important; position: relative !important; margin: 0 !important; width: auto !important; } .reveal .slides section .mind-map li { display: flex !important; flex-direction: column !important; align-items: center !important; list-style-type: none !important; position: relative !important; padding: 20px 10px 0 10px !important; margin: 0 !important; } .reveal .slides section .mind-map li::before, .reveal .slides section .mind-map li::after { content: '' !important; position: absolute !important; top: 0 !important; right: 50% !important; border-top: 2px solid currentColor !important; width: 50% !important; height: 20px !important; } .reveal .slides section .mind-map li::after { right: auto !important; left: 50% !important; border-left: 2px solid currentColor !important; } .reveal .slides section .mind-map li:only-child::after, .reveal .slides section .mind-map li:only-child::before { display: none !important; } .reveal .slides section .mind-map li:only-child { padding-top: 0 !important; } .reveal .slides section .mind-map li:first-child::before, .reveal .slides section .mind-map li:last-child::after { border: 0 none !important; } .reveal .slides section .mind-map li:last-child::before { border-right: 2px solid currentColor !important; border-radius: 0 6px 0 0 !important; } .reveal .slides section .mind-map li:first-child::after { border-radius: 6px 0 0 0 !important; } .reveal .slides section .mind-map ul ul::before { content: '' !important; position: absolute !important; top: 0 !important; left: 50% !important; border-left: 2px solid currentColor !important; width: 0 !important; height: 20px !important; } .reveal .slides section .smart-node { background: #2563eb !important; padding: 12px 20px !important; border-radius: 6px !important; display: inline-block !important; font-weight: 600 !important; font-size: 1.1rem !important; color: #fff !important; z-index: 2 !important; margin: 0 !important; border: none !important; } .rare-kartik-footer { display: none; }</style></head><body><div class="reveal ${currentTheme}"><div class="slides">${slideContainer.innerHTML}</div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"><\/script><script>Reveal.initialize({ hash: true, controls: false, progress: true, center: false });<\/script></body></html>`;
+
+            // Add the index.html file to the ZIP
+            zip.file("index.html", finalHTML);
+
+            // Generate and trigger download
+            zip.generateAsync({type:"blob"}).then(function(content) {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(content);
+                link.download = 'RareKartik_Presentation.zip';
+                link.click();
+            });
+        });
+
+        // 14. PDF EXPORT ENGINE (BUG FIX: STRIPS CLASSES TO PREVENT DUPLICATES)
+        document.getElementById('btn-export-pdf').addEventListener('click', function() {
+            const slideContainer = document.getElementById('slide-container').cloneNode(true);
+            
+            // CLEAN UP: Remove Reveal's dynamic classes so the print layout doesn't overlap
+            slideContainer.querySelectorAll('section').forEach(sec => {
+                sec.classList.remove('past', 'present', 'future', 'hidden');
+                sec.style.display = 'block';
+                sec.style.transform = 'none';
+                sec.style.opacity = '1';
+            });
+            slideContainer.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+            slideContainer.querySelectorAll('.is-active').forEach(el => el.classList.remove('is-active'));
+            
+            const currentTheme = document.getElementById('theme-selector').value;
+
+            // Notice the specific @media print logic added here
+            const printHTML = `<!DOCTYPE html><html><head><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.css"><style>.reveal.theme-cinematic { --r-background-color: #0f172a; --r-main-color: #e2e8f0; --r-heading-color: #38bdf8; } .reveal.theme-minimal { --r-background-color: #ffffff; --r-main-color: #18181b; --r-heading-color: #000; } html, body { overflow: visible !important; height: auto !important; background: #fff !important; margin: 0 !important; font-family: sans-serif; } .reveal { width: 100% !important; height: auto !important; } .reveal .slides { transform: none !important; width: 100% !important; height: auto !important; margin: 0 !important; } .reveal .slides section { display: block !important; opacity: 1 !important; position: relative !important; page-break-after: always !important; min-height: 100vh !important; margin-bottom: 20px !important; } .draggable-item { position: absolute; border: none !important; } .mind-map-container { position: absolute; padding: 30px; } .reveal .slides section .mind-map ul { display: flex !important; flex-direction: row !important; justify-content: center !important; padding-top: 20px !important; position: relative !important; margin: 0 !important; width: auto !important; } .reveal .slides section .mind-map li { display: flex !important; flex-direction: column !important; align-items: center !important; list-style-type: none !important; position: relative !important; padding: 20px 10px 0 10px !important; margin: 0 !important; } .reveal .slides section .mind-map li::before, .reveal .slides section .mind-map li::after { content: '' !important; position: absolute !important; top: 0 !important; right: 50% !important; border-top: 2px solid currentColor !important; width: 50% !important; height: 20px !important; } .reveal .slides section .mind-map li::after { right: auto !important; left: 50% !important; border-left: 2px solid currentColor !important; } .reveal .slides section .mind-map li:only-child::after, .reveal .slides section .mind-map li:only-child::before { display: none !important; } .reveal .slides section .mind-map li:only-child { padding-top: 0 !important; } .reveal .slides section .mind-map li:first-child::before, .reveal .slides section .mind-map li:last-child::after { border: 0 none !important; } .reveal .slides section .mind-map li:last-child::before { border-right: 2px solid currentColor !important; border-radius: 0 6px 0 0 !important; } .reveal .slides section .mind-map li:first-child::after { border-radius: 6px 0 0 0 !important; } .reveal .slides section .mind-map ul ul::before { content: '' !important; position: absolute !important; top: 0 !important; left: 50% !important; border-left: 2px solid currentColor !important; width: 0 !important; height: 20px !important; } .reveal .slides section .smart-node { background: #2563eb !important; padding: 12px 20px !important; border-radius: 6px !important; display: inline-block !important; font-weight: 600 !important; font-size: 1.1rem !important; color: #fff !important; z-index: 2 !important; margin: 0 !important; border: none !important; } .rare-kartik-footer { display: none; } .smart-shape { display: flex; justify-content: center; align-items: center; color: white !important; font-weight: bold; background: #38bdf8; } .shape-circle { width: 120px; height: 120px; border-radius: 50%; } .shape-square { width: 120px; height: 120px; } .shape-rect { width: 200px; height: 100px; } .shape-triangle { width: 0; height: 0; border-left: 60px solid transparent; border-right: 60px solid transparent; border-bottom: 100px solid #38bdf8; background: transparent !important; } .shape-triangle span { position: absolute; top: 50px; color: white; font-weight: bold; }</style></head><body><div class="reveal ${currentTheme}"><div class="slides">${slideContainer.innerHTML}</div></div><script>window.onload = function() { window.print(); }<\/script></body></html>`;
+
+            const iframe = document.createElement('iframe');
+            iframe.style.position = 'fixed'; iframe.style.right = '0'; iframe.style.bottom = '0'; iframe.style.width = '0'; iframe.style.height = '0'; iframe.style.border = 'none';
+            document.body.appendChild(iframe);
+            const doc = iframe.contentWindow.document; doc.open(); doc.write(printHTML); doc.close();
+            setTimeout(() => { document.body.removeChild(iframe); }, 5000);
+        });
+    </script>
+</body>
+</html>
