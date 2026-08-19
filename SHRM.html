@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kartik Chouhan — Premium Academic Presentation</title>
+
+    <!-- 
+    ======================================================================
+    CONFIGURATION
+    ======================================================================
+    -->
+    <script>
+        const PRESENTATION_CONFIG = {
+            title: "Strategic Human Resource Management (SHRM)", 
+            student: "Kartik Chouhan", 
+            digitalMoniker: "rarekartik",
+            className: "M.Com",
+            semester: "3rd Semester",
+            rollNumber: "250408",
+            subject: "Strategic Human Resource Management",
+            teacher: "Assistant Professor Prachi Singh",
+            institution: "Himachal Pradesh University Regional Centre Mohli, Khaniyara",
+            academicYear: "2026",
+            defaultTheme: "amoled"
+        };
+    </script>
+
+    <style>
+        /* 
+        ======================================================================
+        THEME & CORE LAYOUT
+        ======================================================================
+        */
+        :root {
+            --bg-color: #000000;
+            --surface-color: #0a0a0a;
+            --glass: rgba(15, 15, 15, 0.6);
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --accent-primary: #00e5ff; 
+            --accent-danger: #ff0055;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --shadow-color: rgba(0, 229, 255, 0.15);
+            --trail-color: 0, 229, 255;
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-heading: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body.theme-paper {
+            --bg-color: #f4f1eb;
+            --surface-color: #ffffff;
+            --glass: rgba(255, 255, 255, 0.7);
+            --text-main: #1a1a1a;
+            --text-muted: #555555;
+            --accent-primary: #b31b1b; 
+            --accent-danger: #8a0000;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --trail-color: 179, 27, 27;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
+
+        html, body {
+            width: 100%; height: 100%; overflow: hidden;
+            background-color: var(--bg-color); color: var(--text-main);
+            font-family: var(--font-main); transition: background-color 0.8s ease, color 0.8s ease;
+        }
+
+        .ambient-texture {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+        body.theme-paper .ambient-texture { opacity: 0.3; }
+
+        /* 
+        ======================================================================
+        TYPOGRAPHY
+        ======================================================================
+        */
+        h1, h2, h3 { font-family: var(--font-heading); font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
+        .title-massive { font-size: clamp(3rem, 6vw, 8rem); margin-bottom: 0.2em; }
+        .title-section { font-size: clamp(2.5rem, 4vw, 5rem); margin-bottom: 0.5em; color: var(--accent-primary); }
+        .subtitle { font-size: clamp(1.2rem, 2vw, 2.5rem); color: var(--text-muted); font-weight: 400; }
+        .body-text { font-size: clamp(1.1rem, 1.8vw, 2.2rem); line-height: 1.6; font-weight: 300; }
+        .metadata-text { font-size: clamp(0.9rem, 1.2vw, 1.5rem); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 600; }
+        .accent-text { color: var(--accent-primary); }
+        .danger-text { color: var(--accent-danger); }
+
+        /* 
+        ======================================================================
+        3D GLIDE ENGINE
+        ======================================================================
+        */
+        #presentation-container { position: relative; width: 100%; height: 100%; perspective: 1500px; z-index: 10; }
+
+        .slide {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            padding: clamp(2rem, 5vw, 6rem); display: flex; flex-direction: column; justify-content: center;
+            opacity: 0; pointer-events: none; z-index: 1;
+            transform: translate3d(100px, 0, -150px) scale(0.95);
+            transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            will-change: opacity, transform;
+        }
+
+        .slide.active {
+            opacity: 1; pointer-events: all; z-index: 10;
+            transform: translate3d(0, 0, 0) scale(1);
+        }
+
+        .slide.past {
+            transform: translate3d(-100px, 0, 150px) scale(1.05);
+            opacity: 0; pointer-events: none; z-index: 5;
+        }
+
+        /* 
+        ======================================================================
+        COMPONENTS & 3D DIAGRAMS
+        ======================================================================
+        */
+        .grid-2-col { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2rem, 4vw, 4rem); align-items: center; }
+        .grid-3-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+
+        /* CONNECTED 3D FLOW DIAGRAM (Replaces boring bullets) */
+        .flow-container { 
+            display: flex; justify-content: space-between; position: relative; 
+            margin-top: 5rem; align-items: flex-start; gap: 2rem; 
+        }
+        .flow-line { 
+            position: absolute; top: 30px; left: 5%; width: 90%; height: 3px; 
+            background: var(--border-color); z-index: 0; 
+        }
+        .flow-node { 
+            position: relative; z-index: 1; background: var(--glass); border: 1px solid var(--border-color); 
+            border-radius: 16px; padding: 1.5rem 1.5rem 2.5rem 1.5rem; flex: 1; text-align: center; 
+            backdrop-filter: blur(16px); transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease; 
+        }
+        .flow-node:hover { 
+            transform: translateY(-20px) scale(1.05); 
+            box-shadow: 0 15px 40px var(--shadow-color); border-color: var(--accent-primary); 
+        }
+        .flow-number { 
+            display: inline-flex; width: 60px; height: 60px; background: var(--surface-color); 
+            border: 2px solid var(--accent-primary); border-radius: 50%; align-items: center; 
+            justify-content: center; font-family: var(--font-heading); font-size: 1.5rem; font-weight: 700; 
+            margin-top: -3.5rem; margin-bottom: 1.5rem; box-shadow: 0 0 15px var(--shadow-color); color: var(--text-main);
+        }
+
+        @media (max-width: 768px) {
+            .grid-2-col, .grid-3-col, .flow-container { flex-direction: column; grid-template-columns: 1fr; gap: 3rem; }
+            .flow-line { display: none; } /* Hide connecting line on phones */
+        }
+
+        .card {
+            background-color: var(--surface-color); border: 1px solid var(--border-color);
+            border-radius: 16px; padding: 2.5rem;
+            transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
+        }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px var(--shadow-color); border-color: var(--accent-primary); }
+
+        .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1); }
+        .slide.active .reveal { opacity: 1; transform: translateY(0); }
+        .delay-1 { transition-delay: 0.1s; } .delay-2 { transition-delay: 0.2s; } .delay-3 { transition-delay: 0.3s; } .delay-4 { transition-delay: 0.4s; }
+
+        /* UI Controls */
+        #theme-toggle {
+            position: fixed; top: 2rem; right: 2rem; z-index: 1000; background: transparent; border: 1px solid var(--border-color);
+            color: var(--text-muted); padding: 0.8rem 1.5rem; border-radius: 30px; font-size: 1rem; cursor: pointer; backdrop-filter: blur(10px); transition: all 0.3s ease;
+        }
+        #theme-toggle:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+        #progress-bar { position: fixed; bottom: 0; left: 0; height: 4px; background-color: var(--accent-primary); width: 0%; transition: width 0.4s ease; z-index: 1000; }
+        .slide-counter { position: fixed; bottom: 2rem; right: 2rem; font-family: var(--font-heading); font-size: 1.2rem; color: var(--text-muted); z-index: 1000; font-weight: 600; letter-spacing: 2px; }
+    </style>
+</head>
+<body class="theme-amoled">
+
+    <audio id="bg-music" loop>
+        <source src="YOUR_MUSIC_FILE.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="ambient-texture"></div>
+    <canvas id="touch-trail" style="position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:9998;"></canvas>
+
+    <button id="theme-toggle">🌗 Toggle Theme</button>
+    <div id="progress-bar"></div>
+    <div class="slide-counter"><span id="current-slide-num">1</span> / <span id="total-slide-num">X</span></div>
+
+    <div id="presentation-container">
+
+        <!-- ==========================================
+             SLIDE 1: COVER
+        =========================================== -->
+        <div class="slide active">
+            <div class="metadata-text reveal" style="margin-bottom: 2rem;">
+                <span class="conf-institution"></span> &mdash; <span class="conf-academicYear"></span>
+            </div>
+            
+            <h1 class="title-massive reveal delay-1 conf-title"></h1>
+            <h2 class="subtitle reveal delay-2">Presented by <span class="accent-text conf-student"></span> (<span class="conf-moniker"></span>)</h2>
+            
+            <div class="grid-3-col reveal delay-3" style="margin-top: 4rem; border-top: 1px solid var(--border-color); padding-top: 2rem;">
+                <div>
+                    <div class="metadata-text">Class</div>
+                    <div class="body-text conf-className"></div>
+                    <div class="metadata-text" style="margin-top: 0.5rem;">Semester</div>
+                    <div class="body-text conf-semester"></div>
+                </div>
+                <div>
+                    <div class="metadata-text">Roll Number</div>
+                    <div class="body-text accent-text conf-rollNumber" style="font-weight: 700;"></div>
+                </div>
+                <div>
+                    <div class="metadata-text">Subject</div>
+                    <div class="body-text conf-subject"></div>
+                    <div class="metadata-text" style="margin-top: 0.5rem;">Guided By</div>
+                    <div class="body-text conf-teacher"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             SLIDE 2: INTRODUCTION
+        =========================================== -->
+        <div class="slide">
+            <div class="grid-2-col">
+                <div>
+                    <div class="metadata-text reveal">01 &mdash; Introduction</div>
+                    <h2 class="title-section reveal delay-1">Context & Overview</h2>
+                    
+                    <p class="body-text reveal delay-2" style="margin-bottom: 1.5rem;">
+                        Strategic Human Resource Management (SHRM) aligns HR practices with organizational goals. It focuses on developing employees and using their skills to achieve long-term success and competitive advantage.
+                    </p>
+                    <p class="body-text reveal delay-3">
+                        SHRM helps organizations make effective use of their human resources by connecting employee performance with business goals. It also improves employee development, productivity, and organizational growth.
+                    </p>
+                </div>
+                
+                <div class="reveal delay-4">
+                    <img src="images/DUMMY_IMAGE_01.png" alt="Visual" style="width: 100%; border-radius: 16px; border: 1px solid var(--border-color);" onerror="this.style.display='none'">
+                    
+                    <div class="card" style="min-height: 300px; display: flex; align-items: center; justify-content: center; text-align: center;">
+                        <p class="body-text" style="font-style: italic;">[INSERT IMAGE HERE]</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             SLIDE 3: CONCEPT CARDS
+        =========================================== -->
+        <div class="slide">
+            <div class="metadata-text reveal">02 &mdash; Core Concepts</div>
+            <h2 class="title-section reveal delay-1">Meaning & Definition</h2>
+            
+            <div class="grid-2-col" style="margin-top: 2rem;">
+                <div class="card reveal delay-2">
+                    <h3 style="font-size: clamp(1.5rem, 2vw, 2.5rem); margin-bottom: 1rem;" class="accent-text">General Meaning</h3>
+                    <p class="body-text">
+                        SHRM means managing employees strategically to support an organization's goals. It focuses on using and developing human resources for better organizational performance.
+                    </p>
+                </div>
+                
+                <div class="card reveal delay-3">
+                    <h3 style="font-size: clamp(1.5rem, 2vw, 2.5rem); margin-bottom: 1rem;" class="accent-text">Academic Definition</h3>
+                    <p class="body-text" style="font-style: italic; border-left: 4px solid var(--accent-primary); padding-left: 1rem;">
+                        "SHRM is the pattern of planned human resource deployments and activities intended to enable an organization to achieve its goals."
+                    </p>
+                    <p class="metadata-text" style="margin-top: 1rem; text-align: right;">&mdash; Wright & McMahan</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             SLIDE 4: CHARACTERISTICS (3D DIAGRAM)
+        =========================================== -->
+        <div class="slide">
+            <div class="metadata-text reveal">03 &mdash; Analysis</div>
+            <h2 class="title-section reveal delay-1">Characteristics of SHRM</h2>
+            
+            <!-- This replaces boring bullet points with an interactive 3D diagram -->
+            <div class="flow-container reveal delay-2">
+                <div class="flow-line"></div>
+                
+                <div class="flow-node">
+                    <div class="flow-number">1</div>
+                    <h3 style="margin-bottom: 1rem; font-size: 1.5rem;">Alignment</h3>
+                    <p class="body-text" style="font-size: 1.2rem;">Integrates HR policies seamlessly with corporate strategy.</p>
+                </div>
+
+                <div class="flow-node" style="transition-delay: 0.1s;">
+                    <div class="flow-number">2</div>
+                    <h3 style="margin-bottom: 1rem; font-size: 1.5rem;">Long-Term</h3>
+                    <p class="body-text" style="font-size: 1.2rem;">Focuses on future organizational goals rather than short-term tasks.</p>
+                </div>
+
+                <div class="flow-node" style="transition-delay: 0.2s;">
+                    <div class="flow-number">3</div>
+                    <h3 style="margin-bottom: 1rem; font-size: 1.5rem;">Proactive</h3>
+                    <p class="body-text" style="font-size: 1.2rem;">Anticipates future HR needs instead of reacting to current crises.</p>
+                </div>
+
+                <div class="flow-node" style="transition-delay: 0.3s;">
+                    <div class="flow-number">4</div>
+                    <h3 style="margin-bottom: 1rem; font-size: 1.5rem;">People-Centric</h3>
+                    <p class="body-text" style="font-size: 1.2rem;">Treats employees as strategic assets rather than variable costs.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             SLIDE 5: OBJECTIVES
+        =========================================== -->
+        <div class="slide">
+            <div class="metadata-text reveal">04 &mdash; Purpose</div>
+            <h2 class="title-section reveal delay-1">Key Objectives</h2>
+            
+            <div class="grid-2-col" style="margin-top: 2rem;">
+                <div class="card reveal delay-2">
+                    <h3 style="font-size: 2rem; margin-bottom: 0.5rem;" class="accent-text">Competitive Advantage</h3>
+                    <p class="body-text">To build a highly skilled workforce that competitors cannot easily replicate.</p>
+                </div>
+                
+                <div class="card reveal delay-3">
+                    <h3 style="font-size: 2rem; margin-bottom: 0.5rem;" class="accent-text">Goal Integration</h3>
+                    <p class="body-text">To ensure that individual employee goals directly feed into the wider business mission.</p>
+                </div>
+                
+                <div class="card reveal delay-4">
+                    <h3 style="font-size: 2rem; margin-bottom: 0.5rem;" class="accent-text">Culture Building</h3>
+                    <p class="body-text">To foster an organizational culture of continuous learning, innovation, and commitment.</p>
+                </div>
+                
+                <div class="card reveal delay-4" style="transition-delay: 0.5s;">
+                    <h3 style="font-size: 2rem; margin-bottom: 0.5rem;" class="accent-text">Performance Enhancement</h3>
+                    <p class="body-text">To maximize overall organizational productivity through targeted talent management.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             SLIDE 6: IMPORTANCE (3D DIAGRAM)
+        =========================================== -->
+        <div class="slide">
+            <div class="metadata-text reveal">05 &mdash; Significance</div>
+            <h2 class="title-section reveal delay-1">Why is SHRM Important?</h2>
+            
+            <div class="flow-container reveal delay-2">
+                <div class="flow-line"></div>
+                
+                <div class="flow-node">
+                    <div class="flow-number">A</div>
+                    <h3 style="margin-bottom: 1rem; font-size: 1.5rem;">Navigating Change</h3>
+                    <p class="body-text" style="font-size: 1.2rem;">Helps organizations adapt quickly to rapidly changing global markets and technology.</p>
+                </div>
+
+                <div class="flow-node" style="transition-delay: 0.1s;">
+                    <div class="flow-number">B</div>
+                    <h3 style="margin-bottom: 1rem; font-size: 1.5rem;">Talent Retention</h3>
+                    <p class="body-text" style="font-size: 1.2rem;">Creates rewarding environments that keep top-tier talent from leaving for competitors.</p>
+                </div>
+
+                <div class="flow-node" style="transition-delay: 0.2s;">
+                    <div class="flow-number">C</div>
+                    <h3 style="margin-bottom: 1rem; font-size: 1.5rem;">Resource Optimization</h3>
+                    <p class="body-text" style="font-size: 1.2rem;">Ensures maximum Return on Investment (ROI) for all human capital expenditures.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             SLIDE 7: ADVANTAGES & LIMITATIONS
+        =========================================== -->
+        <div class="slide">
+            <div class="metadata-text reveal">06 &mdash; Evaluation</div>
+            <h2 class="title-section reveal delay-1">Advantages vs Limitations</h2>
+            
+            <div class="grid-2-col" style="margin-top: 2rem;">
+                <!-- Advantages Card -->
+                <div class="card reveal delay-2" style="border-top: 4px solid var(--accent-primary);">
+                    <h3 style="font-size: 2.5rem; margin-bottom: 1.5rem;" class="accent-text">Advantages</h3>
+                    <ul class="body-text" style="margin-left: 1.5rem; line-height: 2;">
+                        <li>Provides clear direction and vision for HR.</li>
+                        <li>Boosts employee morale and motivation.</li>
+                        <li>Identifies structural weaknesses early.</li>
+                        <li>Enhances overall business performance.</li>
+                    </ul>
+                </div>
+                
+                <!-- Limitations Card -->
+                <div class="card reveal delay-3" style="border-top: 4px solid var(--accent-danger);">
+                    <h3 style="font-size: 2.5rem; margin-bottom: 1.5rem;" class="danger-text">Limitations</h3>
+                    <ul class="body-text" style="margin-left: 1.5rem; line-height: 2;">
+                        <li>Requires significant time and financial investment.</li>
+                        <li>Prone to resistance from traditional management.</li>
+                        <li>Difficult to measure direct financial outcomes.</li>
+                        <li>Requires constant updating as markets shift.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             SLIDE 8: CONCLUSION
+        =========================================== -->
+        <div class="slide" style="text-align: center; align-items: center;">
+            <div class="metadata-text reveal">07 &mdash; Summary</div>
+            <h2 class="title-massive reveal delay-1" style="font-size: clamp(4rem, 6vw, 7rem); margin-top: 2rem;">Conclusion</h2>
+            
+            <p class="body-text reveal delay-2" style="max-width: 1000px; margin: 2rem auto; font-size: clamp(1.5rem, 2.5vw, 3rem); line-height: 1.5;">
+                Strategic Human Resource Management is not merely an administrative function; it is the critical bridge between human capital and organizational triumph. 
+            </p>
+
+            <div class="card reveal delay-3" style="padding: 1.5rem 3rem; display: inline-block; background: transparent; border-color: var(--accent-primary);">
+                <p class="body-text" style="font-weight: 600; color: var(--accent-primary);">"People are the ultimate strategy."</p>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             SLIDE 9: PROFESSIONAL ENDING PAGE
+        =========================================== -->
+        <div class="slide" style="align-items: center; text-align: center;">
+            <div class="metadata-text reveal">End of Presentation</div>
+            <h1 class="title-massive reveal delay-1 accent-text" style="font-size: clamp(3rem, 8vw, 6rem);">Questions & Discussion</h1>
+            
+            <div class="reveal delay-2" style="width: 100px; height: 2px; background: var(--accent-primary); margin: 2rem auto;"></div>
+            <p class="subtitle reveal delay-2" style="margin-bottom: 4rem;">Thank you for your time and attention.</p>
+            
+            <div class="grid-2-col reveal delay-3" style="max-width: 900px; text-align: left;">
+                <div class="card" style="padding: 2.5rem;">
+                    <p class="metadata-text">Presenter</p>
+                    <p class="body-text" style="font-weight: 700; color: var(--text-main); margin-top: 0.5rem;"><span class="conf-student"></span></p>
+                    <p class="body-text" style="font-size: 1.1rem; margin-top: 0.2rem;"><span class="conf-rollNumber"></span> | <span class="conf-className"></span></p>
+                </div>
+                <div class="card" style="padding: 2.5rem;">
+                    <p class="metadata-text">Institution</p>
+                    <p class="body-text" style="font-weight: 700; color: var(--text-main); margin-top: 0.5rem;"><span class="conf-institution"></span></p>
+                    <p class="body-text" style="font-size: 1.1rem; margin-top: 0.2rem;">Guided by: <span class="conf-teacher"></span></p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 
+    ======================================================================
+    LOGIC, AUDIO, & INTERACTIONS
+    ======================================================================
+    -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            const populateConfig = () => {
+                const mappings = {
+                    'conf-title': PRESENTATION_CONFIG.title,
+                    'conf-student': PRESENTATION_CONFIG.student,
+                    'conf-moniker': PRESENTATION_CONFIG.digitalMoniker,
+                    'conf-className': PRESENTATION_CONFIG.className,
+                    'conf-semester': PRESENTATION_CONFIG.semester,
+                    'conf-rollNumber': PRESENTATION_CONFIG.rollNumber,
+                    'conf-subject': PRESENTATION_CONFIG.subject,
+                    'conf-teacher': PRESENTATION_CONFIG.teacher,
+                    'conf-institution': PRESENTATION_CONFIG.institution,
+                    'conf-academicYear': PRESENTATION_CONFIG.academicYear
+                };
+                for (const [className, value] of Object.entries(mappings)) {
+                    document.querySelectorAll(`.${className}`).forEach(el => el.textContent = value);
+                }
+            };
+            populateConfig();
+
+            const bgMusic = document.getElementById('bg-music');
+            let hasAudioStarted = false;
+            const triggerAudio = () => {
+                if (!hasAudioStarted && bgMusic.src !== "") {
+                    bgMusic.volume = 0.5;
+                    bgMusic.play().then(() => hasAudioStarted = true).catch(() => console.log("Waiting for user interaction..."));
+                }
+            };
+
+            const slides = document.querySelectorAll('.slide');
+            const totalSlides = slides.length;
+            let currentSlide = 0;
+            
+            document.getElementById('total-slide-num').textContent = totalSlides;
+
+            const updateProgress = () => {
+                const progress = (currentSlide / (totalSlides - 1)) * 100;
+                document.getElementById('progress-bar').style.width = `${progress}%`;
+                document.getElementById('current-slide-num').textContent = currentSlide + 1;
+                triggerAudio();
+            };
+
+            const goToSlide = (index) => {
+                if (index < 0 || index >= totalSlides) return;
+                currentSlide = index;
+                
+                slides.forEach((slide, i) => {
+                    slide.classList.remove('active', 'past');
+                    if (i === currentSlide) {
+                        slide.classList.add('active'); 
+                    } else if (i < currentSlide) {
+                        slide.classList.add('past'); 
+                    } 
+                });
+                updateProgress();
+            };
+
+            let touchStartX = 0;
+            document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; triggerAudio(); }, { passive: true });
+            document.addEventListener('touchend', e => {
+                const touchEndX = e.changedTouches[0].screenX;
+                if (touchStartX - touchEndX > 50) goToSlide(currentSlide + 1); 
+                if (touchEndX - touchStartX > 50) goToSlide(currentSlide - 1); 
+            }, { passive: true });
+
+            document.addEventListener('keydown', (e) => {
+                triggerAudio();
+                switch(e.key) {
+                    case 'ArrowRight': case ' ': case 'PageDown': goToSlide(currentSlide + 1); break;
+                    case 'ArrowLeft': case 'PageUp': goToSlide(currentSlide - 1); break;
+                    case 'Home': goToSlide(0); break;
+                    case 'End': goToSlide(totalSlides - 1); break;
+                    case 'f': case 'F':
+                        if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+                        else document.exitFullscreen();
+                        break;
+                }
+            });
+
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            let isAmoled = PRESENTATION_CONFIG.defaultTheme === 'amoled';
+            if(!isAmoled) document.body.className = 'theme-paper';
+            themeToggleBtn.addEventListener('click', () => {
+                isAmoled = !isAmoled;
+                document.body.className = isAmoled ? 'theme-amoled' : 'theme-paper';
+                triggerAudio();
+            });
+
+            const canvas = document.getElementById('touch-trail');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            const resizeCanvas = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+            window.addEventListener('resize', resizeCanvas); resizeCanvas();
+
+            const createParticle = (e) => {
+                const x = e.touches ? e.touches[0].clientX : e.clientX;
+                const y = e.touches ? e.touches[0].clientY : e.clientY;
+                particles.push({ x: x, y: y, life: 1.0, size: Math.random() * 6 + 4 });
+            };
+            document.addEventListener('mousemove', createParticle, { passive: true });
+            document.addEventListener('touchmove', createParticle, { passive: true });
+            document.addEventListener('touchstart', createParticle, { passive: true });
+
+            const animateParticles = () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                const rgb = getComputedStyle(document.body).getPropertyValue('--trail-color').trim();
+                for (let i = 0; i < particles.length; i++) {
+                    const p = particles[i];
+                    p.life -= 0.02; p.size *= 0.96; 
+                    if (p.life <= 0) { particles.splice(i, 1); i--; continue; }
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${rgb}, ${p.life})`;
+                    ctx.shadowBlur = 15; ctx.shadowColor = `rgba(${rgb}, ${p.life})`;
+                    ctx.fill();
+                }
+                requestAnimationFrame(animateParticles);
+            };
+            animateParticles();
+            
+            updateProgress(); 
+        });
+    </script>
+</body>
+</html>
