@@ -1,0 +1,1238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090a0c">
+<title>Advanced Cost Accounting</title>
+
+<!--
+====================================================================
+ADVANCED COST ACCOUNTING — INTERACTIVE ACADEMIC PRESENTATION
+V2 — NEW VISUAL SYSTEM
+
+Design direction:
+• Editorial / financial-lab aesthetic rather than card-grid PPT
+• Smartboard-first 16:9 composition
+• True responsive re-composition on phones
+• SVG-heavy academic visuals
+• No external dependencies
+• Single self-contained HTML
+====================================================================
+-->
+
+<script>
+/* ========================= CONFIGURATION ========================= */
+const PRESENTATION_CONFIG = {
+  title: "Advanced Cost Accounting",
+  student: "Kartik Chouhan",
+  className: "M.Com",
+  semester: "3rd Semester",
+  rollNumber: "250408",
+  subject: "Management Accounting",
+  teacher: "Miss Priyanka",
+  institution: "Himachal Pradesh University Regional Centre Mohli, Khaniyara – Dharamshala (176218)",
+  academicYear: "2026–2027",
+
+  defaultTheme: "onyx",
+  accent: "#8EB7FF",
+
+  // true = subtle sounds on deliberate interactions
+  interactionSounds: true,
+  touchTrail: true
+};
+</script>
+
+<style>
+/* ========================= DESIGN TOKENS ========================= */
+:root{
+  --bg:#090a0c;
+  --paper:#f2eee5;
+  --ink:#141518;
+  --text:#f1f3f5;
+  --muted:#a3a9b1;
+  --faint:#666d76;
+  --line:rgba(255,255,255,.13);
+  --line-strong:rgba(255,255,255,.25);
+  --accent:#8EB7FF;
+  --accent-2:#5d83bd;
+  --accent-soft:rgba(142,183,255,.11);
+  --accent-mid:rgba(142,183,255,.28);
+  --panel:#111317;
+  --panel-2:#171a20;
+  --shadow:0 30px 90px rgba(0,0,0,.35);
+
+  --pad-x:clamp(28px,6vw,160px);
+  --pad-y:clamp(24px,5vh,100px);
+  --radius:clamp(10px,1vw,24px);
+  --ease:cubic-bezier(.2,.75,.2,1);
+}
+
+html.paper{
+  --bg:#f2eee5;
+  --text:#151619;
+  --muted:#65655f;
+  --faint:#98968e;
+  --line:rgba(20,21,24,.13);
+  --line-strong:rgba(20,21,24,.25);
+  --accent:#355f94;
+  --accent-2:#6d86a4;
+  --accent-soft:rgba(53,95,148,.08);
+  --accent-mid:rgba(53,95,148,.24);
+  --panel:#f8f5ee;
+  --panel-2:#e8e2d7;
+  --shadow:0 25px 70px rgba(55,48,36,.13);
+}
+
+html.ink{
+  --bg:#12100e;
+  --text:#f4efe5;
+  --muted:#aaa196;
+  --faint:#6e665d;
+  --line:rgba(255,242,218,.14);
+  --line-strong:rgba(255,242,218,.26);
+  --accent:#d6aa68;
+  --accent-2:#a17a43;
+  --accent-soft:rgba(214,170,104,.10);
+  --accent-mid:rgba(214,170,104,.28);
+  --panel:#191613;
+  --panel-2:#211c17;
+  --shadow:0 30px 90px rgba(0,0,0,.4);
+}
+
+html.slate{
+  --bg:#0d1218;
+  --text:#eef5f7;
+  --muted:#9eafb7;
+  --faint:#63737c;
+  --line:rgba(220,242,247,.13);
+  --line-strong:rgba(220,242,247,.25);
+  --accent:#6fd0c7;
+  --accent-2:#3e918a;
+  --accent-soft:rgba(111,208,199,.10);
+  --accent-mid:rgba(111,208,199,.27);
+  --panel:#111a20;
+  --panel-2:#17232a;
+  --shadow:0 30px 90px rgba(0,0,0,.42);
+}
+
+html.paper-blue{
+  --bg:#e9eff3;
+  --text:#14202a;
+  --muted:#5b6b76;
+  --faint:#89969e;
+  --line:rgba(20,32,42,.13);
+  --line-strong:rgba(20,32,42,.25);
+  --accent:#245c82;
+  --accent-2:#5e8098;
+  --accent-soft:rgba(36,92,130,.08);
+  --accent-mid:rgba(36,92,130,.23);
+  --panel:#f5f8fa;
+  --panel-2:#dfe8ed;
+  --shadow:0 25px 65px rgba(40,65,80,.13);
+}
+
+*{box-sizing:border-box}
+html,body{
+  width:100%;height:100%;margin:0;overflow:hidden;
+  background:var(--bg);color:var(--text);
+  font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+body{touch-action:none;user-select:none;overscroll-behavior:none}
+button{font:inherit}
+
+/* ========================= STAGE ========================= */
+#app{
+  position:fixed;inset:0;overflow:hidden;
+  height:100vh;width:100vw;
+  background:
+    radial-gradient(circle at 88% 12%,var(--accent-soft),transparent 25%),
+    radial-gradient(circle at 4% 92%,rgba(255,255,255,.025),transparent 24%),
+    var(--bg);
+  transition:background .7s var(--ease),color .7s var(--ease);
+}
+#grain{
+  position:absolute;inset:0;pointer-events:none;opacity:.05;z-index:50;
+  background-image:radial-gradient(rgba(255,255,255,.7) .45px,transparent .55px);
+  background-size:6px 6px;
+}
+html.paper #grain,html.paper-blue #grain{opacity:.25;mix-blend-mode:multiply}
+
+/* ========================= TOP UTILITY ========================= */
+#topbar{
+  position:fixed;z-index:100;top:18px;left:var(--pad-x);right:var(--pad-x);
+  display:flex;justify-content:space-between;align-items:center;
+  pointer-events:none;
+}
+.identity{
+  display:flex;align-items:center;gap:10px;
+  font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);font-weight:700;
+}
+.identity-mark{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.tools{display:flex;align-items:center;gap:7px;pointer-events:auto}
+.tool{
+  width:38px;height:38px;border:1px solid var(--line);
+  border-radius:50%;background:color-mix(in srgb,var(--panel) 82%,transparent);
+  color:var(--text);display:grid;place-items:center;cursor:pointer;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  transition:transform .2s ease,border-color .2s ease;
+}
+.tool:active{transform:scale(.9)}
+.tool svg{width:16px;height:16px}
+#themeName{
+  min-width:75px;text-align:right;
+  color:var(--faint);font-size:clamp(9px, 0.8vw, 16px);letter-spacing:.1em;text-transform:uppercase;
+}
+
+/* ========================= PROGRESS ========================= */
+#progress{
+  position:fixed;z-index:100;left:var(--pad-x);right:var(--pad-x);bottom:20px;
+  display:flex;align-items:center;gap:14px;pointer-events:none;
+}
+.progress-track{height:1px;background:var(--line);flex:1;position:relative}
+.progress-fill{height:100%;width:0;background:var(--accent);transition:width .7s var(--ease)}
+.count{font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;letter-spacing:.12em}
+
+/* ========================= SLIDE ENGINE ========================= */
+#slides{position:absolute;inset:0;touch-action:none;-webkit-user-select:none;user-select:none}
+.slide{
+  position:absolute;inset:0;visibility:hidden;opacity:0;
+  width:100%;height:100vh;
+  padding:var(--pad-y) var(--pad-x) calc(var(--pad-y) + 18px);
+  display:flex;overflow:hidden;
+  transform:translate3d(5%,0,0) scale(.99);
+  transition:opacity .68s var(--ease),transform .72s var(--ease),visibility 0s linear .72s;
+}
+.slide.active{
+  visibility:visible;opacity:1;transform:translate3d(0,0,0) scale(1);
+  transition:opacity .68s var(--ease),transform .72s var(--ease),visibility 0s;
+}
+.slide.past{transform:translate3d(-5%,0,0) scale(.99)}
+.slide-inner{
+  width:min(100%,92vw);height:100%;margin:auto;
+  display:flex;flex-direction:column;justify-content:center;
+  position:relative;z-index:2;
+}
+
+/* ========================= TYPE ========================= */
+.kicker{
+  margin:0 0 14px;color:var(--accent);
+  font-size:clamp(10px,1vw,24px);letter-spacing:.2em;
+  text-transform:uppercase;font-weight:750;
+}
+.h1{
+  margin:0;max-width:75vw;
+  font-size:clamp(48px,6.7vw,160px);
+  line-height:.88;letter-spacing:-.065em;font-weight:800;
+}
+.h2{
+  margin:0;max-width:70vw;
+  font-size:clamp(36px,4.6vw,120px);
+  line-height:.92;letter-spacing:-.052em;font-weight:790;
+}
+.lead{
+  margin:18px 0 0;max-width:60vw;
+  font-size:clamp(17px,1.6vw,36px);line-height:1.45;color:var(--muted);
+}
+.body{
+  margin:0;font-size:clamp(15px,1.3vw,28px);line-height:1.52;color:var(--muted)
+}
+.micro{
+  font-size:clamp(10px,.85vw,18px);line-height:1.5;color:var(--muted)
+}
+.num{
+  font-size:clamp(34px,4.5vw,90px);font-weight:800;
+  line-height:.8;letter-spacing:-.06em;color:var(--accent)
+}
+.accent{color:var(--accent)}
+.rule{height:1px;background:var(--line)}
+
+/* ========================= REVEAL ANIMATION ========================= */
+.reveal{
+  opacity:0;transform:translateY(22px);filter:blur(7px);
+  transition:opacity .65s var(--ease),transform .7s var(--ease),filter .7s var(--ease);
+}
+.active .reveal{opacity:1;transform:none;filter:none}
+.d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.25s}
+.d4{transition-delay:.35s}.d5{transition-delay:.46s}.d6{transition-delay:.58s}
+
+/* ========================= COVER — NEW STRUCTURE ========================= */
+.cover-grid{
+  display:grid;grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr);
+  gap:clamp(35px,7vw,180px);align-items:end;
+}
+.cover-left{position:relative}
+.cover-index{
+  position:absolute;left:-2px;top:-105px;
+  font-size:clamp(11px,1.1vw,24px);letter-spacing:.18em;
+  color:var(--faint);font-weight:700;
+}
+.cover-title-line{display:block}
+.cover-title-line:nth-child(2){color:var(--accent)}
+.cover-deck{
+  margin-top:30px;padding-top:18px;border-top:1px solid var(--line);
+  display:flex;justify-content:space-between;gap:30px;max-width:60vw
+}
+.cover-meta{
+  display:grid;grid-template-columns:1fr 1fr;gap:14px 26px;
+  border-left:1px solid var(--line);padding-left:28px;
+}
+.meta-item{display:grid;gap:4px}
+.meta-label{font-size:clamp(9px, 0.8vw, 18px);text-transform:uppercase;letter-spacing:.15em;color:var(--faint)}
+.meta-value{font-size:clamp(12px,1.1vw,24px);color:var(--text);font-weight:650}
+.cover-visual{
+  position:absolute;right:-3vw;top:10%;width:min(44vw,1200px);aspect-ratio:1;
+  opacity:.55;pointer-events:none
+}
+.cover-visual circle,.cover-visual path{vector-effect:non-scaling-stroke}
+
+/* ========================= INTRO — EDITORIAL TIMELINE ========================= */
+.intro-layout{
+  display:grid;grid-template-columns:.72fr 1.28fr;gap:clamp(35px,7vw,180px);
+  align-items:center;margin-top:clamp(35px,6vh,75px)
+}
+.big-idea{
+  font-size:clamp(34px,4.5vw,110px);line-height:.96;
+  letter-spacing:-.05em;font-weight:760
+}
+.idea-line{border-left:2px solid var(--accent);padding-left:22px}
+.timeline{display:grid;position:relative}
+.timeline::before{
+  content:"";position:absolute;left:10px;top:10px;bottom:10px;width:1px;background:var(--line)
+}
+.timeline-item{
+  display:grid;grid-template-columns:22px 1fr;gap:22px;padding:0 0 28px
+}
+.timeline-dot{
+  width:21px;height:21px;border:1px solid var(--accent-mid);
+  background:var(--bg);border-radius:50%;position:relative;z-index:2;
+  box-shadow:inset 0 0 0 5px var(--bg)
+}
+.timeline-item strong{font-size:clamp(16px,1.6vw,32px)}
+.timeline-item p{margin:6px 0 0}
+
+/* ========================= MEANING — SPLIT DEFINITION ========================= */
+.definition{
+  margin-top:clamp(35px,6vh,70px);
+  display:grid;grid-template-columns:.75fr 1.25fr;gap:clamp(25px,5vw,85px);
+}
+.term-block{
+  padding:30px 0;border-top:2px solid var(--accent);border-bottom:1px solid var(--line)
+}
+.term{
+  font-size:clamp(60px,9.5vw,240px);line-height:.8;letter-spacing:-.08em;font-weight:820
+}
+.definition-copy{display:grid;gap:20px}
+.def-row{display:grid;grid-template-columns:120px 1fr;gap:25px;padding:18px 0;border-bottom:1px solid var(--line)}
+.def-row b{font-size:clamp(12px,1vw,22px);text-transform:uppercase;letter-spacing:.12em;color:var(--accent)}
+
+/* ========================= OBJECTIVES — RADIAL SYSTEM ========================= */
+.objective-stage{
+  margin-top:clamp(25px,4vh,50px);
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;align-items:stretch
+}
+.objective{
+  min-height:clamp(220px,30vh,450px);
+  padding:24px;border:1px solid var(--line);position:relative;
+  background:linear-gradient(145deg,var(--accent-soft),transparent 65%);
+  overflow:hidden;cursor:pointer;transition:transform .35s var(--ease),border-color .3s ease
+}
+.objective:hover,.objective.selected{transform:translateY(-5px);border-color:var(--accent-mid)}
+.objective::after{
+  content:"";position:absolute;right:-50px;bottom:-50px;width:150px;height:150px;
+  border:1px solid var(--line);border-radius:50%;opacity:.6
+}
+.objective h3{margin:25px 0 10px;font-size:clamp(19px,1.8vw,42px);letter-spacing:-.03em}
+.objective-detail{max-height:0;overflow:hidden;opacity:0;transition:max-height .45s var(--ease),opacity .35s ease}
+.objective.selected .objective-detail{max-height:100px;opacity:1}
+.objective-hint{position:absolute;bottom:20px;left:24px;font-size:clamp(9px,0.8vw,16px);letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+
+/* ========================= CHARACTERISTICS — MATRIX ========================= */
+.matrix{
+  margin-top:clamp(35px,6vh,70px);
+  display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)
+}
+.matrix-cell{
+  min-height:260px;padding:25px 24px;border-right:1px solid var(--line);
+  cursor:pointer;position:relative;transition:background .3s ease
+}
+.matrix-cell:last-child{border-right:0}
+.matrix-cell.selected{background:var(--accent-soft)}
+.matrix-cell .small-index{font-size:clamp(10px,0.9vw,20px);color:var(--accent);letter-spacing:.15em}
+.matrix-cell h3{font-size:clamp(20px,1.8vw,44px);margin:35px 0 12px;letter-spacing:-.03em}
+.matrix-cell p{margin:0}
+.matrix-cell .underline{
+  position:absolute;left:24px;right:24px;bottom:22px;height:2px;
+  background:var(--line);overflow:hidden
+}
+.matrix-cell .underline span{display:block;width:0;height:100%;background:var(--accent);transition:width .45s ease}
+.matrix-cell.selected .underline span{width:100%}
+
+/* ========================= CLASSIFICATION — SVG TREE ========================= */
+.visual-shell{
+  margin-top:clamp(25px,4vh,45px);border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  padding:clamp(18px,2.5vw,35px) 0
+}
+.tree-svg{width:100%;height:auto;display:block}
+.svg-node{cursor:pointer}
+.svg-node rect{fill:var(--panel);stroke:var(--line-strong);stroke-width:1.5}
+.svg-node text{fill:var(--text);font-family:inherit;font-weight:700;text-anchor:middle}
+.svg-node.selected rect{fill:var(--accent-soft);stroke:var(--accent)}
+.svg-link{stroke:var(--accent-mid);stroke-width:1.5;fill:none}
+.svg-note{font-size:13px;fill:var(--muted);font-family:inherit}
+
+/* ========================= COMPARISON — NOT CARDS ========================= */
+.compare{
+  margin-top:clamp(30px,5vh,60px);border-top:2px solid var(--accent);
+}
+.compare-head,.compare-row{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:0
+}
+.compare-head>div,.compare-row>div{padding:17px 20px}
+.compare-head{border-bottom:1px solid var(--line)}
+.compare-head>div:nth-child(2),.compare-head>div:nth-child(3){color:var(--accent)}
+.compare-row{border-bottom:1px solid var(--line)}
+.compare-row>div:first-child{color:var(--faint);font-size:clamp(11px,1vw,20px);text-transform:uppercase;letter-spacing:.12em}
+.compare-row>div:nth-child(2),.compare-row>div:nth-child(3){font-size:clamp(14px,1.35vw,28px);line-height:1.35}
+.compare-row>div:nth-child(3){border-left:1px solid var(--line)}
+
+/* ========================= TECHNIQUES — CONSTELLATION ========================= */
+.tech-layout{
+  margin-top:clamp(20px,3vh,35px);display:grid;grid-template-columns:1fr .62fr;
+  gap:clamp(25px,5vw,80px);align-items:center
+}
+.constellation{width:100%;max-width:45vw;aspect-ratio:1}
+.constellation text{font-family:inherit}
+.tech-list{border-top:1px solid var(--line)}
+.tech-row{
+  display:grid;grid-template-columns:42px 1fr auto;align-items:center;
+  gap:12px;padding:16px 0;border-bottom:1px solid var(--line);cursor:pointer
+}
+.tech-row .tech-num{color:var(--accent);font-weight:800}
+.tech-row .tech-tag{font-size:clamp(10px,0.9vw,18px);text-transform:uppercase;letter-spacing:.12em;color:var(--faint)}
+.tech-row.selected{background:var(--accent-soft);padding-left:10px;padding-right:10px}
+
+/* ========================= IMPORTANCE — FLOW ========================= */
+.flow{
+  margin-top:clamp(35px,5vh,60px);
+  display:grid;grid-template-columns:repeat(5,1fr);gap:0
+}
+.flow-node{
+  position:relative;padding:24px 20px;min-height:200px;border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);cursor:pointer
+}
+.flow-node+.flow-node{border-left:1px solid var(--line)}
+.flow-node::after{
+  content:"";position:absolute;right:-7px;top:50%;width:13px;height:13px;
+  border-top:1px solid var(--accent);border-right:1px solid var(--accent);
+  transform:translateY(-50%) rotate(45deg);background:var(--bg);z-index:3
+}
+.flow-node:last-child::after{display:none}
+.flow-node.selected{background:var(--accent-soft)}
+.flow-node h3{font-size:clamp(17px,1.6vw,36px);margin:28px 0 10px}
+.flow-node p{margin:0}
+
+/* ========================= ADVANTAGES / LIMITATIONS ========================= */
+.dual{
+  margin-top:clamp(35px,5vh,60px);
+  display:grid;grid-template-columns:1fr 1fr;gap:clamp(35px,6vw,100px)
+}
+.dual-section{border-top:2px solid var(--accent)}
+.dual-title{display:flex;justify-content:space-between;padding:18px 0;border-bottom:1px solid var(--line)}
+.dual-title h3{margin:0;font-size:clamp(22px,2.2vw,50px)}
+.dual-item{
+  display:grid;grid-template-columns:42px 1fr;gap:14px;padding:18px 0;border-bottom:1px solid var(--line)
+}
+.dual-item .dnum{color:var(--accent);font-weight:800}
+.dual-item strong{font-size:clamp(15px,1.35vw,28px)}
+.dual-item p{margin:5px 0 0}
+
+/* ========================= CONCLUSION ========================= */
+.conclusion{
+  margin-top:clamp(30px,5vh,60px);display:grid;grid-template-columns:.95fr 1.05fr;gap:clamp(35px,6vw,100px)
+}
+.conclusion-statement{
+  font-size:clamp(30px,4vw,86px);line-height:1;letter-spacing:-.055em;font-weight:760
+}
+.takeaways{border-left:1px solid var(--line);padding-left:28px}
+.takeaway{display:grid;grid-template-columns:36px 1fr;gap:15px;padding:16px 0;border-bottom:1px solid var(--line)}
+.takeaway b{color:var(--accent)}
+
+/* ========================= CLOSING ========================= */
+.closing{text-align:center}
+.closing .slide-inner{align-items:center}
+.closing-mark{
+  width:92px;height:92px;border:1px solid var(--accent-mid);border-radius:50%;
+  display:grid;place-items:center;color:var(--accent);margin-bottom:30px
+}
+.closing-title{font-size:clamp(58px,9.5vw,200px);line-height:.82;letter-spacing:-.08em;font-weight:820}
+.closing-meta{
+  margin-top:35px;display:flex;gap:14px;flex-wrap:wrap;justify-content:center;color:var(--muted);font-size:clamp(12px,1.1vw,22px)
+}
+.closing-meta span{padding:7px 11px;border:1px solid var(--line);border-radius:999px}
+
+/* ========================= TOUCH TRAIL ========================= */
+#touch-layer{position:fixed;inset:0;z-index:300;pointer-events:none;overflow:hidden}
+.trail{
+  position:absolute;width:12px;height:12px;margin:-6px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 12px var(--accent),0 0 28px var(--accent-mid);
+  animation:trail 1.7s ease-out forwards
+}
+@keyframes trail{to{opacity:0;transform:scale(.12)}}
+
+/* ========================= TOAST ========================= */
+#toast{
+  position:fixed;z-index:500;left:50%;bottom:8%;transform:translate(-50%,15px);
+  opacity:0;pointer-events:none;padding:9px 14px;border:1px solid var(--line);
+  border-radius:999px;background:color-mix(in srgb,var(--panel) 88%,transparent);
+  color:var(--muted);font-size:11px;transition:.25s ease;backdrop-filter:blur(12px)
+}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#gesture-hint{position:fixed;z-index:90;left:50%;bottom:7%;transform:translateX(-50%);font-size:9px;letter-spacing:.18em;color:var(--faint);opacity:0;pointer-events:none;transition:opacity .6s ease;text-align:center}
+#gesture-hint.show{opacity:.8}
+
+/* ========================= RESPONSIVE RE-COMPOSITION ========================= */
+@media (max-width:1100px) and (orientation:landscape){
+  :root{--pad-x:clamp(24px,4.5vw,60px)}
+  .cover-grid{grid-template-columns:1fr .75fr}
+  .cover-visual{width:45vw;right:-8vw}
+  .matrix-cell{min-height:210px}
+}
+
+@media (max-width:800px){
+  :root{--pad-x:22px;--pad-y:20px}
+  #topbar{top:11px}
+  .identity span:last-child{display:none}
+  #themeName{min-width:54px;font-size:8px}
+  .tool{width:34px;height:34px}
+}
+
+/* FIX: Centered mobile portrait fallback instead of forcing it to the top */
+@media (max-aspect-ratio:1/1){
+  body{overflow:hidden}
+  .slide{
+    overflow-y:auto;overflow-x:hidden;
+    padding-top:76px;padding-bottom:65px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .slide-inner{height:auto;min-height:calc(100vh - 145px);justify-content:center}
+  .cover-grid,.intro-layout,.definition,.tech-layout,.dual,.conclusion{
+    grid-template-columns:1fr;gap:32px
+  }
+  .cover-grid{min-height:calc(100vh - 155px);align-content:center;align-items:center}
+  .cover-visual{
+    width:90vw;right:-38vw;top:5%;opacity:.25
+  }
+  .cover-index{position:static;margin-bottom:25px}
+  .cover-title-line{display:inline}
+  .cover-deck{display:block;margin-top:22px}
+  .cover-left{max-width:760px}
+  .cover-meta{max-width:760px;width:100%;justify-self:center}
+  .cover-meta{
+    border-left:0;border-top:1px solid var(--line);padding:15px 0 0;margin-top:18px;
+    grid-template-columns:1fr 1fr
+  }
+  .cover-meta .meta-value{font-size:11px}
+  .intro-layout{margin-top:35px}
+  .big-idea{font-size:clamp(32px,9vw,54px)}
+  .objective-stage{grid-template-columns:1fr;gap:12px}
+  .objective{min-height:190px}
+  .matrix{grid-template-columns:1fr 1fr}
+  .matrix-cell{min-height:190px;border-bottom:1px solid var(--line)}
+  .matrix-cell:nth-child(2){border-right:0}
+  .matrix-cell:nth-child(4){border-right:0}
+  .matrix-cell h3{margin-top:24px}
+  .visual-shell{overflow-x:auto}
+  .tree-svg{min-width:650px}
+  .compare{min-width:620px;overflow-x:auto}
+  .tech-layout{margin-top:20px}
+  .constellation{max-width:500px;margin:auto}
+  .flow{grid-template-columns:1fr;gap:0}
+  .flow-node{min-height:145px;border-bottom:0}
+  .flow-node+.flow-node{border-left:0;border-top:1px solid var(--line)}
+  .flow-node::after{
+    right:auto;left:50%;top:auto;bottom:-7px;
+    transform:translateX(-50%) rotate(135deg);background:var(--bg)
+  }
+  .flow-node:last-child{border-bottom:1px solid var(--line)}
+  .dual{gap:35px}
+  .conclusion-statement{font-size:clamp(31px,8vw,50px)}
+  .takeaways{border-left:0;border-top:1px solid var(--line);padding:15px 0 0}
+  .closing .slide-inner{justify-content:center}
+  .closing-title{font-size:clamp(64px,18vw,105px)}
+}
+
+@media (max-width:480px){
+  :root{--pad-x:18px}
+  .h1{font-size:clamp(42px,13vw,62px)}
+  .h2{font-size:clamp(34px,10vw,48px)}
+  .lead{font-size:15px}
+  .body{font-size:14px}
+  .matrix{grid-template-columns:1fr}
+  .matrix-cell{border-right:0!important;min-height:150px}
+  .matrix-cell h3{margin-top:18px}
+  .definition{gap:22px}
+  .term{font-size:74px}
+  .def-row{grid-template-columns:92px 1fr;gap:14px}
+  .tech-row{grid-template-columns:30px 1fr}
+  .tech-row .tech-tag{display:none}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+
+<body>
+<div id="app">
+<div id="grain"></div>
+
+<header id="topbar">
+  <div class="identity"><span class="identity-mark"></span><span>Advanced Cost Accounting</span></div>
+  <div class="tools">
+    <span id="themeName">ONYX</span>
+    <button class="tool" id="themeBtn" aria-label="Change theme">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/>
+      </svg>
+    </button>
+    <button class="tool" id="fullBtn" aria-label="Fullscreen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M8 3H3v5M16 3h5v5M8 21H3v-5M21 16v5h-5"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<main id="slides">
+
+<!-- ===================== 01 COVER ===================== -->
+<section class="slide active" data-label="Cover">
+  <svg class="cover-visual" viewBox="0 0 700 700" aria-hidden="true">
+    <circle cx="350" cy="350" r="285" fill="none" stroke="var(--line)" stroke-width="1"/>
+    <circle cx="350" cy="350" r="215" fill="none" stroke="var(--line)" stroke-width="1"/>
+    <circle cx="350" cy="350" r="140" fill="none" stroke="var(--accent-mid)" stroke-width="1"/>
+    <path d="M55 470 Q350 80 645 470" fill="none" stroke="var(--accent-mid)" stroke-width="1"/>
+    <path d="M120 185 Q350 580 580 185" fill="none" stroke="var(--line)" stroke-width="1"/>
+    <circle cx="350" cy="350" r="16" fill="var(--accent)" opacity=".8"/>
+    <circle cx="350" cy="350" r="38" fill="var(--accent-soft)" stroke="var(--accent-mid)"/>
+  </svg>
+
+  <div class="slide-inner">
+    <div class="cover-grid">
+      <div class="cover-left">
+        <div class="cover-index reveal">M.COM · 03 / 12 · 2026–27</div>
+        <p class="kicker reveal d1">Management Accounting · Advanced Study</p>
+        <h1 class="h1 reveal d2">
+          <span class="cover-title-line">Advanced</span>
+          <span class="cover-title-line">Cost Accounting.</span>
+        </h1>
+        <div class="cover-deck reveal d3">
+          <p class="lead" style="margin:0">From cost classification and ascertainment to modern analytical techniques and managerial decisions.</p>
+        </div>
+      </div>
+
+      <div class="cover-meta reveal d4">
+        <div class="meta-item"><span class="meta-label">Presented by</span><span class="meta-value" data-c="student"></span></div>
+        <div class="meta-item"><span class="meta-label">Roll number</span><span class="meta-value" data-c="rollNumber"></span></div>
+        <div class="meta-item"><span class="meta-label">Programme</span><span class="meta-value" data-c="className"></span></div>
+        <div class="meta-item"><span class="meta-label">Semester</span><span class="meta-value" data-c="semester"></span></div>
+        <div class="meta-item"><span class="meta-label">Faculty</span><span class="meta-value" data-c="teacher"></span></div>
+        <div class="meta-item"><span class="meta-label">Academic year</span><span class="meta-value" data-c="academicYear"></span></div>
+        <div class="meta-item" style="grid-column:1/-1"><span class="meta-label">Institution</span><span class="meta-value" data-c="institution"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 02 INTRODUCTION ===================== -->
+<section class="slide" data-label="Introduction">
+  <div class="slide-inner">
+    <p class="kicker reveal">01 · Context</p>
+    <h2 class="h2 reveal d1">Why cost accounting<br><span class="accent">goes deeper.</span></h2>
+
+    <div class="intro-layout">
+      <div class="reveal d2">
+        <div class="big-idea idea-line">Cost is not just a number. It is a <span class="accent">decision signal.</span></div>
+        <p class="body" style="margin-top:22px">Advanced cost accounting examines how costs are accumulated, assigned, behaved and interpreted so that management can understand efficiency, profitability and alternatives.</p>
+      </div>
+
+      <div class="timeline reveal d3">
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div><strong>Record & classify</strong><p class="micro">Identify the nature, function, behaviour and traceability of costs.</p></div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div><strong>Ascertain & assign</strong><p class="micro">Determine product, service, process or activity cost using an appropriate method.</p></div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div><strong>Analyse & control</strong><p class="micro">Study cost behaviour, variances, efficiency and opportunities for reduction.</p></div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div><strong>Decide</strong><p class="micro">Use relevant cost information for pricing, make-or-buy, product mix and strategic choices.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 03 MEANING / DEFINITION ===================== -->
+<section class="slide" data-label="Meaning">
+  <div class="slide-inner">
+    <p class="kicker reveal">02 · Foundation</p>
+    <h2 class="h2 reveal d1">Meaning & definition</h2>
+
+    <div class="definition">
+      <div class="term-block reveal d2">
+        <div class="term">COST</div>
+        <p class="body" style="margin-top:25px">The monetary measure of resources sacrificed or used to achieve a specified objective.</p>
+      </div>
+
+      <div class="definition-copy reveal d3">
+        <div class="def-row">
+          <b>Meaning</b>
+          <p class="body">Advanced cost accounting is the systematic use of cost concepts and techniques to ascertain, classify, analyse and control costs for managerial purposes.</p>
+        </div>
+        <div class="def-row">
+          <b>Core idea</b>
+          <p class="body">It moves beyond simple cost recording toward interpretation: <span class="accent">what cost occurred, why it occurred, how it behaves and what decision it supports.</span></p>
+        </div>
+        <div class="def-row">
+          <b>Scope</b>
+          <p class="body">Cost behaviour, cost allocation, marginal costing, standard costing, activity-based costing, target costing, life-cycle costing and other modern approaches.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 04 OBJECTIVES ===================== -->
+<section class="slide" data-label="Objectives">
+  <div class="slide-inner">
+    <p class="kicker reveal">03 · Purpose</p>
+    <h2 class="h2 reveal d1">What does it try to achieve?</h2>
+    <p class="lead reveal d2">Touch a block. The supporting explanation opens without changing the slide.</p>
+
+    <div class="objective-stage">
+      <article class="objective reveal d2" tabindex="0">
+        <div><span class="num">01</span><h3>Cost ascertainment</h3><div class="objective-detail body">Determine the cost of products, services, jobs, processes or activities accurately.</div></div>
+        <span class="objective-hint">Touch to expand</span>
+      </article>
+      <article class="objective reveal d3" tabindex="0">
+        <div><span class="num">02</span><h3>Cost control</h3><div class="objective-detail body">Detect inefficiency, waste and unfavourable cost movements so management can intervene.</div></div>
+        <span class="objective-hint">Touch to expand</span>
+      </article>
+      <article class="objective reveal d4" tabindex="0">
+        <div><span class="num">03</span><h3>Decision support</h3><div class="objective-detail body">Supply relevant cost information for pricing, product mix, outsourcing and other choices.</div></div>
+        <span class="objective-hint">Touch to expand</span>
+      </article>
+      <article class="objective reveal d3" tabindex="0">
+        <div><span class="num">04</span><h3>Planning</h3><div class="objective-detail body">Support budgets, forecasts and cost-volume-profit analysis for future operations.</div></div>
+        <span class="objective-hint">Touch to expand</span>
+      </article>
+      <article class="objective reveal d4" tabindex="0">
+        <div><span class="num">05</span><h3>Profitability analysis</h3><div class="objective-detail body">Understand margins by product, customer, channel, activity or responsibility centre.</div></div>
+        <span class="objective-hint">Touch to expand</span>
+      </article>
+      <article class="objective reveal d5" tabindex="0">
+        <div><span class="num">06</span><h3>Efficiency improvement</h3><div class="objective-detail body">Use cost information to improve resource utilisation and identify cost-reduction opportunities.</div></div>
+        <span class="objective-hint">Touch to expand</span>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 05 CHARACTERISTICS ===================== -->
+<section class="slide" data-label="Characteristics">
+  <div class="slide-inner">
+    <p class="kicker reveal">04 · Nature</p>
+    <h2 class="h2 reveal d1">Six characteristics of an advanced system.</h2>
+
+    <div class="matrix reveal d2">
+      <div class="matrix-cell selected">
+        <span class="small-index">01</span><h3>Analytical</h3><p class="body">Costs are broken into meaningful categories for interpretation.</p><div class="underline"><span></span></div>
+      </div>
+      <div class="matrix-cell">
+        <span class="small-index">02</span><h3>Flexible</h3><p class="body">Methods can adapt to different products, services and decisions.</p><div class="underline"><span></span></div>
+      </div>
+      <div class="matrix-cell">
+        <span class="small-index">03</span><h3>Decision-oriented</h3><p class="body">Relevant cost information is linked directly to managerial choices.</p><div class="underline"><span></span></div>
+      </div>
+      <div class="matrix-cell">
+        <span class="small-index">04</span><h3>Control-focused</h3><p class="body">Cost behaviour and deviations are studied to improve efficiency.</p><div class="underline"><span></span></div>
+      </div>
+      <div class="matrix-cell">
+        <span class="small-index">05</span><h3>Forward-looking</h3><p class="body">Budgets, standards and forecasts support future planning.</p><div class="underline"><span></span></div>
+      </div>
+      <div class="matrix-cell">
+        <span class="small-index">06</span><h3>Multi-dimensional</h3><p class="body">Costs can be viewed by product, activity, behaviour, function or responsibility.</p><div class="underline"><span></span></div>
+      </div>
+      <div class="matrix-cell" style="grid-column:span 2;display:flex;align-items:center">
+        <div><span class="small-index">SYSTEM VIEW</span><p class="body" style="margin-top:14px;max-width:40vw"><span class="accent">No single classification is universally best.</span> The useful view depends on the managerial question being asked.</p></div>
+        <div class="num" style="margin-left:auto">06</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 06 CLASSIFICATION ===================== -->
+<section class="slide" data-label="Classification">
+  <div class="slide-inner">
+    <p class="kicker reveal">05 · Classification</p>
+    <h2 class="h2 reveal d1">One cost. Multiple lenses.</h2>
+    <p class="lead reveal d2">A cost may be classified differently depending on the purpose of analysis.</p>
+
+    <div class="visual-shell reveal d3">
+      <svg class="tree-svg" viewBox="0 0 1200 390" role="img" aria-label="Cost classification tree">
+        <g class="svg-node" data-sound="diagram" data-key="trace">
+          <rect x="505" y="18" width="190" height="58" rx="12"/><text x="600" y="53" font-size="18">TOTAL COST</text>
+        </g>
+        <path class="svg-link" d="M600 76V125M600 125H220M600 125H600M600 125H980"/>
+        <g class="svg-node" data-sound="diagram"><rect x="120" y="125" width="200" height="58" rx="12"/><text x="220" y="160" font-size="15">TRACEABILITY</text></g>
+        <g class="svg-node" data-sound="diagram"><rect x="500" y="125" width="200" height="58" rx="12"/><text x="600" y="160" font-size="15">BEHAVIOUR</text></g>
+        <g class="svg-node" data-sound="diagram"><rect x="880" y="125" width="200" height="58" rx="12"/><text x="980" y="160" font-size="15">FUNCTION</text></g>
+        <path class="svg-link" d="M220 183V225M220 225H130M220 225H310M600 183V225M600 225H510M600 225H690M980 183V225M980 225H890M980 225H1070"/>
+        <g class="svg-node"><rect x="50" y="225" width="160" height="58" rx="12"/><text x="130" y="260" font-size="14">DIRECT</text></g>
+        <g class="svg-node"><rect x="230" y="225" width="160" height="58" rx="12"/><text x="310" y="260" font-size="14">INDIRECT</text></g>
+        <g class="svg-node"><rect x="430" y="225" width="160" height="58" rx="12"/><text x="510" y="260" font-size="14">FIXED</text></g>
+        <g class="svg-node"><rect x="610" y="225" width="160" height="58" rx="12"/><text x="690" y="260" font-size="14">VARIABLE</text></g>
+        <g class="svg-node"><rect x="810" y="225" width="160" height="58" rx="12"/><text x="890" y="260" font-size="14">PRODUCTION</text></g>
+        <g class="svg-node"><rect x="990" y="225" width="160" height="58" rx="12"/><text x="1070" y="260" font-size="14">SELLING / ADMIN</text></g>
+        <text x="600" y="340" class="svg-note" text-anchor="middle">Other lenses: controllability · normality · opportunity · relevance · product / period</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 07 FINANCIAL VS COST ===================== -->
+<section class="slide" data-label="Comparison">
+  <div class="slide-inner">
+    <p class="kicker reveal">06 · Distinction</p>
+    <h2 class="h2 reveal d1">Financial accounting<br><span class="accent">vs cost accounting.</span></h2>
+
+    <div class="compare reveal d2">
+      <div class="compare-head">
+        <div>Basis</div><div>Financial accounting</div><div>Cost accounting</div>
+      </div>
+      <div class="compare-row"><div>Primary purpose</div><div>Reports overall financial performance and position.</div><div>Determines and analyses cost for internal use.</div></div>
+      <div class="compare-row"><div>Users</div><div>Shareholders, creditors, regulators and other external users.</div><div>Managers and internal decision-makers.</div></div>
+      <div class="compare-row"><div>Focus</div><div>Organisation as a whole.</div><div>Products, services, jobs, processes and activities.</div></div>
+      <div class="compare-row"><div>Time orientation</div><div>Mainly historical reporting.</div><div>Historical + current + future-oriented analysis.</div></div>
+      <div class="compare-row"><div>Flexibility</div><div>More strongly shaped by reporting rules.</div><div>Methods can be adapted to managerial requirements.</div></div>
+      <div class="compare-row"><div>Decision use</div><div>Indirect support through financial information.</div><div>Direct support for cost control and managerial decisions.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 08 TECHNIQUES ===================== -->
+<section class="slide" data-label="Techniques">
+  <div class="slide-inner">
+    <p class="kicker reveal">07 · Modern toolkit</p>
+    <h2 class="h2 reveal d1">The advanced cost toolkit.</h2>
+
+    <div class="tech-layout">
+      <svg class="constellation reveal d2" viewBox="0 0 600 600" role="img" aria-label="Modern cost accounting techniques map">
+        <g fill="none" stroke="var(--line)" stroke-width="1">
+          <circle cx="300" cy="300" r="210"/><circle cx="300" cy="300" r="125"/>
+        </g>
+        <g stroke="var(--accent-mid)" stroke-width="1.5">
+          <path d="M300 300L300 82"/><path d="M300 300L498 185"/><path d="M300 300L495 420"/>
+          <path d="M300 300L300 518"/><path d="M300 300L102 420"/><path d="M300 300L102 185"/>
+        </g>
+        <circle cx="300" cy="300" r="74" fill="var(--accent-soft)" stroke="var(--accent-mid)"/>
+        <text x="300" y="294" fill="var(--text)" text-anchor="middle" font-size="18" font-weight="750">COST</text>
+        <text x="300" y="319" fill="var(--muted)" text-anchor="middle" font-size="12">ANALYTICS</text>
+        <g fill="var(--panel)" stroke="var(--line-strong)">
+          <circle cx="300" cy="72" r="43"/><circle cx="505" cy="180" r="43"/><circle cx="505" cy="425" r="43"/>
+          <circle cx="300" cy="528" r="43"/><circle cx="95" cy="425" r="43"/><circle cx="95" cy="180" r="43"/>
+        </g>
+        <g fill="var(--text)" text-anchor="middle" font-size="11" font-weight="700">
+          <text x="300" y="76">STANDARD</text><text x="505" y="184">ABC</text><text x="505" y="429">TARGET</text>
+          <text x="300" y="532">LIFE-CYCLE</text><text x="95" y="429">MARGINAL</text><text x="95" y="184">KAIZEN</text>
+        </g>
+      </svg>
+
+      <div class="tech-list reveal d3">
+        <div class="tech-row selected"><span class="tech-num">01</span><strong>Standard costing</strong><span class="tech-tag">benchmark</span></div>
+        <div class="tech-row"><span class="tech-num">02</span><strong>Activity-based costing</strong><span class="tech-tag">activities</span></div>
+        <div class="tech-row"><span class="tech-num">03</span><strong>Target costing</strong><span class="tech-tag">market-back</span></div>
+        <div class="tech-row"><span class="tech-num">04</span><strong>Life-cycle costing</strong><span class="tech-tag">whole life</span></div>
+        <div class="tech-row"><span class="tech-num">05</span><strong>Marginal costing</strong><span class="tech-tag">incremental</span></div>
+        <div class="tech-row"><span class="tech-num">06</span><strong>Kaizen costing</strong><span class="tech-tag">continuous</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 09 IMPORTANCE ===================== -->
+<section class="slide" data-label="Importance">
+  <div class="slide-inner">
+    <p class="kicker reveal">08 · Managerial value</p>
+    <h2 class="h2 reveal d1">From cost data to action.</h2>
+    <p class="lead reveal d2">The value of a cost system is realised when information changes a decision.</p>
+
+    <div class="flow reveal d3">
+      <div class="flow-node selected"><span class="num">01</span><h3>Planning</h3><p class="micro">Budgets, forecasts and cost targets.</p></div>
+      <div class="flow-node"><span class="num">02</span><h3>Pricing</h3><p class="micro">Understand cost and contribution before setting prices.</p></div>
+      <div class="flow-node"><span class="num">03</span><h3>Control</h3><p class="micro">Locate waste, inefficiency and cost deviations.</p></div>
+      <div class="flow-node"><span class="num">04</span><h3>Profitability</h3><p class="micro">Analyse margins by product, activity or customer.</p></div>
+      <div class="flow-node"><span class="num">05</span><h3>Decisions</h3><p class="micro">Compare alternatives using relevant cost information.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 10 ADVANTAGES / LIMITATIONS ===================== -->
+<section class="slide" data-label="Evaluation">
+  <div class="slide-inner">
+    <p class="kicker reveal">09 · Evaluation</p>
+    <h2 class="h2 reveal d1">Strengths — and where caution is needed.</h2>
+
+    <div class="dual">
+      <div class="dual-section reveal d2">
+        <div class="dual-title"><h3>Advantages</h3><span class="accent">01–05</span></div>
+        <div class="dual-item"><span class="dnum">01</span><div><strong>Better cost visibility</strong><p class="micro">Makes the cost structure of products and activities clearer.</p></div></div>
+        <div class="dual-item"><span class="dnum">02</span><div><strong>Improved control</strong><p class="micro">Helps locate waste, inefficiency and unfavourable movements.</p></div></div>
+        <div class="dual-item"><span class="dnum">03</span><div><strong>Stronger decisions</strong><p class="micro">Provides relevant information for short- and long-term choices.</p></div></div>
+        <div class="dual-item"><span class="dnum">04</span><div><strong>Profitability insight</strong><p class="micro">Shows where contribution and margins are actually generated.</p></div></div>
+        <div class="dual-item"><span class="dnum">05</span><div><strong>Continuous improvement</strong><p class="micro">Creates a basis for efficiency and cost-reduction programmes.</p></div></div>
+      </div>
+
+      <div class="dual-section reveal d3">
+        <div class="dual-title"><h3>Limitations</h3><span class="accent">01–05</span></div>
+        <div class="dual-item"><span class="dnum">01</span><div><strong>System cost</strong><p class="micro">Detailed systems require time, people, data and maintenance.</p></div></div>
+        <div class="dual-item"><span class="dnum">02</span><div><strong>Allocation problems</strong><p class="micro">Indirect-cost allocation may involve judgement and assumptions.</p></div></div>
+        <div class="dual-item"><span class="dnum">03</span><div><strong>Data dependence</strong><p class="micro">Poor input data can produce misleading analysis.</p></div></div>
+        <div class="dual-item"><span class="dnum">04</span><div><strong>Changing conditions</strong><p class="micro">Historical patterns may become less useful in volatile environments.</p></div></div>
+        <div class="dual-item"><span class="dnum">05</span><div><strong>Not every cost is controllable</strong><p class="micro">External factors can affect actual costs beyond managerial influence.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 11 CONCLUSION ===================== -->
+<section class="slide" data-label="Conclusion">
+  <div class="slide-inner">
+    <p class="kicker reveal">10 · Synthesis</p>
+    <h2 class="h2 reveal d1">The accounting is useful<br>when it <span class="accent">explains the cost.</span></h2>
+
+    <div class="conclusion">
+      <div class="conclusion-statement reveal d2">
+        Advanced cost accounting transforms raw expenditure into structured information for <span class="accent">planning, control, analysis and decisions.</span>
+      </div>
+      <div class="takeaways reveal d3">
+        <div class="takeaway"><b>01</b><p class="body">Classify costs according to the question being asked.</p></div>
+        <div class="takeaway"><b>02</b><p class="body">Use the appropriate technique for the decision — not simply the most sophisticated technique.</p></div>
+        <div class="takeaway"><b>03</b><p class="body">Interpret cost behaviour and relevance before acting on a number.</p></div>
+        <div class="takeaway"><b>04</b><p class="body">The final objective is better managerial judgement and resource use.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 12 CLOSING ===================== -->
+<section class="slide closing" data-label="Closing">
+  <div class="slide-inner">
+    <div class="closing-mark reveal">
+      <svg viewBox="0 0 24 24" width="32" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M5 12h13M13 6l6 6-6 6"/>
+      </svg>
+    </div>
+    <p class="kicker reveal d1">End of presentation</p>
+    <h2 class="closing-title reveal d2">Thank You.</h2>
+    <p class="lead reveal d3" style="text-align:center">Questions & discussion</p>
+    <div class="closing-meta reveal d4">
+      <span data-c="student"></span><span data-c="rollNumber"></span><span data-c="teacher"></span><span data-c="className"></span>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<div id="progress"><div class="progress-track"><div class="progress-fill"></div></div><div class="count"><span id="current">01</span> / <span id="total"></span></div></div>
+<div id="touch-layer"></div>
+<div id="toast"></div>
+<div id="gesture-hint" aria-hidden="true">SWIPE LEFT / RIGHT TO NAVIGATE</div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  const root = document.documentElement;
+  const slides = [...document.querySelectorAll(".slide")];
+  const progress = document.querySelector(".progress-fill");
+  const currentEl = document.getElementById("current");
+  const totalEl = document.getElementById("total");
+  const toast = document.getElementById("toast");
+  const trailLayer = document.getElementById("touch-layer");
+
+  document.querySelectorAll("[data-c]").forEach(el => {
+    const key = el.dataset.c;
+    el.textContent = PRESENTATION_CONFIG[key] ?? "";
+  });
+
+  const themes = [
+    ["onyx","ONYX"],["paper","PAPER"],["ink","INK"],["slate","SLATE"],["paper-blue","PAPER BLUE"]
+  ];
+  let themeIndex = Math.max(0, themes.findIndex(t => t[0] === PRESENTATION_CONFIG.defaultTheme));
+  let current = 0, moving = false, down = false, sx = 0, sy = 0, lastTrail = 0, audio = null, toastTimer;
+
+  totalEl.textContent = String(slides.length).padStart(2,"0");
+
+  function setTheme(name) {
+    themes.forEach(([n]) => root.classList.remove(n));
+    root.classList.add(name);
+    themeIndex = Math.max(0,themes.findIndex(t=>t[0]===name));
+    document.getElementById("themeName").textContent = themes[themeIndex][1];
+    localStorage.setItem("aca-theme",name);
+  }
+
+  const saved = localStorage.getItem("aca-theme");
+  setTheme(themes.some(t=>t[0]===saved) ? saved : PRESENTATION_CONFIG.defaultTheme);
+
+  function tone(freq=650,duration=.06){
+    if(!PRESENTATION_CONFIG.interactionSounds) return;
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC) return;
+    audio ||= new AC();
+    if(audio.state==="suspended") audio.resume();
+    const o=audio.createOscillator(), g=audio.createGain();
+    o.type="sine";
+    o.frequency.setValueAtTime(freq,audio.currentTime);
+    o.frequency.exponentialRampToValueAtTime(freq*.8,audio.currentTime+duration);
+    g.gain.setValueAtTime(.0001,audio.currentTime);
+    g.gain.exponentialRampToValueAtTime(.045,audio.currentTime+.01);
+    g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+duration);
+    o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+duration+.02);
+  }
+
+  function showToast(msg){
+    clearTimeout(toastTimer);
+    toast.textContent=msg;toast.classList.add("show");
+    toastTimer=setTimeout(()=>toast.classList.remove("show"),1300);
+  }
+
+  function update(index){
+    slides.forEach((s,i)=>{
+      s.classList.remove("active","past");
+      if(i<index)s.classList.add("past");
+      if(i===index)s.classList.add("active");
+    });
+    currentEl.textContent=String(index+1).padStart(2,"0");
+    progress.style.width=((index+1)/slides.length*100)+"%";
+  }
+
+  function go(index){
+    if(moving || index<0 || index>=slides.length || index===current)return;
+    moving=true; current=index; update(current);
+    tone(index>current ? 720 : 560,.045);
+    setTimeout(()=>moving=false,560);
+  }
+  function next(){ if(current>=slides.length-1)return; moving=true; current++; update(current); tone(720,.045); setTimeout(()=>moving=false,420); }
+  function prev(){ if(current<=0)return; moving=true; current--; update(current); tone(560,.045); setTimeout(()=>moving=false,420); }
+
+  document.addEventListener("keydown",e=>{
+    if(e.key==="ArrowRight"||e.key===" "){e.preventDefault();next()}
+    else if(e.key==="ArrowLeft"){e.preventDefault();prev()}
+    else if(e.key==="Home"){e.preventDefault();go(0)}
+    else if(e.key==="End"){e.preventDefault();go(slides.length-1)}
+    else if(e.key.toLowerCase()==="f"){e.preventDefault();toggleFull()}
+    else if(e.key.toLowerCase()==="t"){PRESENTATION_CONFIG.touchTrail=!PRESENTATION_CONFIG.touchTrail;showToast("Touch trail "+(PRESENTATION_CONFIG.touchTrail?"ON":"OFF"))}
+  });
+
+  function trail(x,y){
+    if(!PRESENTATION_CONFIG.touchTrail)return;
+    const now=performance.now();
+    if(now-lastTrail<28)return;
+    lastTrail=now;
+    const p=document.createElement("div");
+    p.className="trail";p.style.left=x+"px";p.style.top=y+"px";
+    trailLayer.appendChild(p);
+    p.addEventListener("animationend",()=>p.remove(),{once:true});
+  }
+
+  document.getElementById("themeBtn").addEventListener("pointerup",()=>{
+    themeIndex=(themeIndex+1)%themes.length;
+    setTheme(themes[themeIndex][0]);tone(760,.06);showToast(themes[themeIndex][1]);
+  });
+
+  async function toggleFull(){
+    try{
+      if(!document.fullscreenElement)await document.documentElement.requestFullscreen();
+      else await document.exitFullscreen();
+    }catch{showToast("Fullscreen unavailable")}
+  }
+  document.getElementById("fullBtn").addEventListener("pointerup",toggleFull);
+
+  /*
+   * SMARTBOARD NAVIGATION — V4
+   *
+   * Important: trigger navigation as soon as a clear horizontal gesture
+   * crosses the threshold instead of waiting for pointerup. This avoids
+   * Android/Smartboard Chromium builds that lose the final touch event.
+   *
+   * Capture phase + pointer capture + TouchEvent fallback.
+   */
+  let gesture = null;
+
+  function beginGesture(x, y, id = null){
+    gesture = {
+      x, y, lastX:x, lastY:y,
+      id, triggered:false, active:true
+    };
+  }
+
+  function moveGesture(x, y){
+    if(!gesture || !gesture.active) return;
+
+    gesture.lastX=x;
+    gesture.lastY=y;
+    trail(x,y);
+
+    const dx=x-gesture.x;
+    const dy=y-gesture.y;
+
+    // FIX: Ignore predominantly vertical movement. Lowered thresholds for much easier swiping on all devices.
+    if(Math.abs(dx) < 20 || Math.abs(dx) < Math.abs(dy) * 1.0) return;
+
+    // Trigger immediately once the horizontal threshold is crossed.
+    if(!gesture.triggered){
+      gesture.triggered=true;
+      if(dx < 0) next();
+      else prev();
+    }
+  }
+
+  function finishGesture(){
+    if(gesture) gesture.active=false;
+    gesture=null;
+  }
+
+  const gestureSurface = document.getElementById("slides");
+
+  // Pointer Events: modern Android Chrome, Smartboards, mouse and pen.
+  gestureSurface.addEventListener("pointerdown", e=>{
+    if(e.pointerType==="mouse" && e.button!==0) return;
+
+    beginGesture(e.clientX,e.clientY,e.pointerId);
+
+    // Keep the gesture on this element even if the finger leaves it.
+    try{
+      e.currentTarget.setPointerCapture(e.pointerId);
+    }catch(_){}
+
+  }, {capture:true,passive:true});
+
+  gestureSurface.addEventListener("pointermove", e=>{
+    if(!gesture || gesture.id!==e.pointerId) return;
+    moveGesture(e.clientX,e.clientY);
+  }, {capture:true,passive:true});
+
+  gestureSurface.addEventListener("pointerup", e=>{
+    if(!gesture || gesture.id!==e.pointerId) return;
+    finishGesture();
+  }, {capture:true,passive:true});
+
+  gestureSurface.addEventListener("pointercancel", e=>{
+    if(!gesture || gesture.id!==e.pointerId) return;
+    finishGesture();
+  }, {capture:true,passive:true});
+
+  // Additional legacy Android touch fallback.
+  gestureSurface.addEventListener("touchstart", e=>{
+    if(gesture) return;
+    const t=e.changedTouches[0];
+    if(!t) return;
+    beginGesture(t.clientX,t.clientY,t.identifier);
+  }, {capture:true,passive:true});
+
+  gestureSurface.addEventListener("touchmove", e=>{
+    if(!gesture) return;
+    const t=[...e.changedTouches].find(x=>x.identifier===gesture.id) || e.changedTouches[0];
+    if(!t) return;
+    moveGesture(t.clientX,t.clientY);
+
+    // Once horizontal navigation has happened, stop browser gesture handling.
+    if(gesture.triggered && e.cancelable) e.preventDefault();
+  }, {capture:true,passive:false});
+
+  gestureSurface.addEventListener("touchend", e=>{
+    if(!gesture) return;
+    finishGesture();
+  }, {capture:true,passive:true});
+
+  gestureSurface.addEventListener("touchcancel", ()=>{
+    finishGesture();
+  }, {capture:true,passive:true});
+
+  // Interactive objective cards
+  document.querySelectorAll(".objective").forEach(el=>{
+    const act=()=>{el.classList.toggle("selected");tone(620,.06)};
+    el.addEventListener("pointerup",act);
+    el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();act()}});
+  });
+
+  // Characteristics
+  document.querySelectorAll(".matrix-cell").forEach(el=>{
+    el.addEventListener("pointerup",()=>{
+      document.querySelectorAll(".matrix-cell").forEach(x=>x.classList.remove("selected"));
+      el.classList.add("selected");tone(680,.055);
+    });
+  });
+
+  // SVG nodes
+  document.querySelectorAll(".svg-node").forEach(el=>{
+    el.addEventListener("pointerup",()=>{
+      document.querySelectorAll(".svg-node").forEach(x=>x.classList.remove("selected"));
+      el.classList.add("selected");tone(780,.07);
+    });
+  });
+
+  // Techniques
+  document.querySelectorAll(".tech-row").forEach(el=>{
+    el.addEventListener("pointerup",()=>{
+      document.querySelectorAll(".tech-row").forEach(x=>x.classList.remove("selected"));
+      el.classList.add("selected");tone(690,.055);
+    });
+  });
+
+  // Flow
+  document.querySelectorAll(".flow-node").forEach(el=>{
+    el.addEventListener("pointerup",()=>{
+      document.querySelectorAll(".flow-node").forEach(x=>x.classList.remove("selected"));
+      el.classList.add("selected");tone(710,.055);
+    });
+  });
+
+  update(0);
+
+  // Emergency fallback: double-tap the extreme left edge = previous,
+  // extreme right edge = next. Kept invisible during normal use.
+  let lastEdgeTap=0;
+  gestureSurface.addEventListener("dblclick", e=>{
+    const now=performance.now();
+    if(now-lastEdgeTap<450){
+      if(e.clientX < innerWidth*.12) prev();
+      else if(e.clientX > innerWidth*.88) next();
+    }
+    lastEdgeTap=now;
+  }, {passive:true});
+
+  // Briefly expose the navigation affordance on first load.
+  const gestureHint=document.getElementById("gesture-hint");
+  setTimeout(()=>gestureHint.classList.add("show"),900);
+  setTimeout(()=>gestureHint.classList.remove("show"),3600);
+
+  // Expose a tiny API for debugging/manual use.
+  window.PresentationAPI={next,prev,go,setTheme,toggleFull,config:PRESENTATION_CONFIG};
+})();
+</script>
+</body>
+</html>
