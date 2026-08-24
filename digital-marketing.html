@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital E-Marketing and E-Commerce - Kartik Chouhan</title>
+    <style>
+        /* Typography and External Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Nunito:wght@400;600;800&display=swap');
+
+        :root {
+            --bg: #0a0a0c;
+            --stroke-primary: #e2e8f0;
+            --accent-1: #feca57; /* Yellow/Gold for highlights */
+            --accent-2: #ff6b6b; /* Red/Coral for warnings/emphasis */
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --font-sketch: 'Caveat', cursive, sans-serif;
+            --font-body: 'Nunito', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            overflow: hidden;
+            touch-action: none; /* Prevent browser swipe navigation */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Presentation Container */
+        #app {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, #111116 0%, #050505 100%);
+        }
+
+        /* 16:9 Canvas Area */
+        #canvas-area {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            max-width: calc(100vh * 16 / 9);
+            max-height: calc(100vw * 9 / 16);
+            background: transparent;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            overflow: hidden;
+        }
+
+        /* Slides */
+        .slide-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease; /* Erase/Wipe transition */
+            z-index: 1;
+        }
+
+        .slide-svg.active {
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 2;
+        }
+
+        /* Sketch Elements Styling */
+        path, line, polyline, circle, rect {
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .stroke-primary { stroke: var(--stroke-primary); stroke-width: 4; }
+        .stroke-thick { stroke: var(--stroke-primary); stroke-width: 7; }
+        .stroke-accent { stroke: var(--accent-1); stroke-width: 5; }
+        .stroke-accent2 { stroke: var(--accent-2); stroke-width: 5; }
+        .stroke-thin { stroke: var(--stroke-primary); stroke-width: 2; }
+        .stroke-dashed { stroke-dasharray: 10 15; }
+        
+        .fill-primary { fill: var(--stroke-primary); stroke: none; }
+        .fill-accent { fill: var(--accent-1); stroke: none; }
+
+        /* Text Elements embedded in SVG */
+        .fo-text {
+            overflow: visible;
+        }
+        
+        h1, h2, h3, .sketch-font {
+            font-family: var(--font-sketch);
+            font-weight: 700;
+        }
+
+        .heading { font-size: 64px; color: var(--accent-1); line-height: 1.1; letter-spacing: 2px;}
+        .subheading { font-size: 42px; color: var(--text-main); }
+        .body-text { font-size: 26px; color: var(--text-main); font-weight: 600; line-height: 1.5; }
+        .small-text { font-size: 20px; color: var(--text-muted); }
+        .accent-text { color: var(--accent-1); }
+        .warning-text { color: var(--accent-2); }
+        
+        .box-text { font-size: 32px; font-family: var(--font-sketch); text-align: center; color: var(--bg); font-weight: 700;}
+        .box-text-light { font-size: 32px; font-family: var(--font-sketch); text-align: center; color: var(--text-main); }
+
+        ul.sketch-list {
+            list-style: none;
+            padding-left: 20px;
+        }
+        ul.sketch-list li {
+            position: relative;
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+        ul.sketch-list li::before {
+            content: "→";
+            position: absolute;
+            left: -35px;
+            color: var(--accent-1);
+            font-family: var(--font-sketch);
+            font-size: 35px;
+            top: -8px;
+        }
+
+        /* UI Controls */
+        #ui-layer {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .controls-group {
+            display: flex;
+            gap: 15px;
+            pointer-events: auto;
+            background: rgba(10, 10, 12, 0.7);
+            padding: 10px 20px;
+            border-radius: 30px;
+            border: 2px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        button {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-family: var(--font-body);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0.7;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        button:hover { opacity: 1; transform: scale(1.05); color: var(--accent-1); }
+        button:active { transform: scale(0.95); }
+        
+        button svg { width: 20px; height: 20px; fill: currentColor; }
+
+        #progress-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            z-index: 100;
+        }
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--accent-1);
+            transition: width 0.3s ease;
+        }
+
+        #slide-counter {
+            font-family: var(--font-sketch);
+            font-size: 24px;
+            color: var(--accent-1);
+            letter-spacing: 2px;
+        }
+
+        /* Fullscreen specific */
+        :fullscreen #canvas-area { max-width: 100vw; max-height: 100vh; }
+        
+        /* Utility for quick flex alignment in foreignObjects */
+        .flex-col { display: flex; flex-direction: column; }
+        .flex-row { display: flex; flex-direction: row; align-items: center; }
+        .gap-2 { gap: 10px; }
+        .gap-4 { gap: 20px; }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <div id="progress-container"><div id="progress-bar"></div></div>
+        
+        <div id="canvas-area">
+            
+            <!-- SLIDE 1: Title -->
+            <svg viewBox="0 0 1600 900" class="slide-svg" id="slide-1">
+                <foreignObject x="150" y="150" width="1300" height="200" class="seq-anim fo-text">
+                    <h1 class="heading" style="text-align: center; font-size: 72px;">DIGITAL E-MARKETING AND E-COMMERCE</h1>
+                </foreignObject>
+                <!-- Underline -->
+                <path class="seq-anim stroke-accent stroke-thick" d="M 200 230 Q 800 250 1400 220" />
+                
+                <foreignObject x="150" y="260" width="1300" height="100" class="seq-anim fo-text">
+                    <h2 class="subheading" style="text-align: center;">From Traditional Markets to the Digital Marketplace</h2>
+                </foreignObject>
+
+                <!-- Market transformation graphic -->
+                <!-- Traditional Shop -->
+                <path class="seq-anim stroke-primary stroke-thick" d="M 350 550 L 350 400 L 450 350 L 550 400 L 550 550 Z M 320 400 L 580 400" />
+                <path class="seq-anim stroke-primary stroke-thick" d="M 400 550 L 400 450 L 500 450 L 500 550" />
+                <foreignObject x="350" y="580" width="200" height="60" class="seq-anim fo-text">
+                    <p class="sketch-font" style="text-align: center; font-size: 28px;">Physical Store</p>
+                </foreignObject>
+
+                <!-- Arrows -->
+                <path class="seq-anim stroke-accent stroke-thick" d="M 620 480 Q 700 450 780 480" />
+                <path class="seq-anim stroke-accent stroke-thick" d="M 750 450 L 780 480 L 750 510" />
+
+                <!-- Digital Shop (Phone) -->
+                <path class="seq-anim stroke-primary stroke-thick" d="M 850 350 C 850 330 870 330 870 330 L 980 330 C 980 330 1000 330 1000 350 L 1000 600 C 1000 620 980 620 980 620 L 870 620 C 870 620 850 620 850 600 Z" />
+                <path class="seq-anim stroke-primary stroke-thick" d="M 910 605 L 940 605" />
+                <!-- Screen content (cart) -->
+                <path class="seq-anim stroke-accent2 stroke-thick" d="M 880 400 L 900 400 L 920 480 L 960 480 L 970 420 L 905 420" />
+                <circle class="seq-anim stroke-accent2 stroke-thick" cx="925" cy="510" r="10" />
+                <circle class="seq-anim stroke-accent2 stroke-thick" cx="955" cy="510" r="10" />
+                <foreignObject x="825" y="640" width="250" height="60" class="seq-anim fo-text">
+                    <p class="sketch-font accent-text" style="text-align: center; font-size: 28px;">Digital Marketplace</p>
+                </foreignObject>
+
+                <!-- Credentials -->
+                <foreignObject x="1100" y="650" width="450" height="200" class="seq-anim fo-text">
+                    <div class="body-text small-text" style="text-align: right; border-right: 4px solid var(--accent-1); padding-right: 20px;">
+                        <p class="sketch-font" style="font-size: 28px; color: white;">Kartik Chouhan</p>
+                        <p>Roll No: 250408</p>
+                        <p>M.Com 3rd Semester</p>
+                        <p>HPURCD</p>
+                        <p style="margin-top: 10px; color: var(--accent-1);">Under Guidance of:<br>Prof. Kuldeep Chandel</p>
+                    </div>
+                </foreignObject>
+            </svg>
+
+            <!-- SLIDE 2: What is Digital Marketing -->
+            <svg viewBox="0 0 1600 900" class="slide-svg" id="slide-2">
+                <foreignObject x="100" y="80" width="1400" height="100" class="seq-anim fo-text">
+                    <h1 class="heading">What is Digital Marketing?</h1>
+                </foreignObject>
+                <path class="seq-anim stroke-accent stroke-thick" d="M 100 150 Q 300 160 550 145" />
+
+                <!-- Definition Box -->
+                <path class="seq-anim stroke-primary stroke-thick" d="M 100 200 L 700 210 L 690 400 L 110 390 Z" />
+                <foreignObject x="130" y="230" width="550" height="150" class="seq-anim fo-text">
+                    <p class="body-text">Marketing products or services using <span class="accent-text">digital channels</span> to reach, engage, and convert consumers.</p>
+                </foreignObject>
+
+                <!-- Central Customer -->
+                <circle class="seq-anim stroke-accent2 stroke-thick" cx="1100" cy="450" r="40" />
+                <path class="seq-anim stroke-accent2 stroke-thick" d="M 1100 490 L 1100 580 M 1100 520 L 1050 560 M 1100 520 L 1150 560 M 1100 580 L 1060 650 M 1100 580 L 1140 650" />
+                <foreignObject x="1000" y="670" width="200" height="50" class="seq-anim fo-text">
+                    <p class="sketch-font" style="text-align: center; font-size: 32px;">Target Customer</p>
+                </foreignObject>
+
+                <!-- Branches -->
+                <path class="seq-anim stroke-primary stroke-thick stroke-dashed" d="M 1100 400 Q 1150 250 1300 250" /> <!-- Top Right -->
+                <path class="seq-anim stroke-primary stroke-thick stroke-dashed" d="M 1050 420 Q 900 280 800 250" /> <!-- Top Left -->
+                <path class="seq-anim stroke-primary stroke-thick stroke-dashed" d="M 1150 470 Q 1350 450 1350 550" /> <!-- Right -->
+                <path class="seq-anim stroke-primary stroke-thick stroke-dashed" d="M 1050 470 Q 800 500 850 600" /> <!-- Left -->
+
+                <!-- Labels -->
+                <foreignObject x="1250" y="200" width="200" height="60" class="seq-anim fo-text">
+                    <p class="box-text-light">Search Engines</p>
+                </foreignObject>
+                <foreignObject x="700" y="200" width="200" height="60" class="seq-anim fo-text">
+                    <p class="box-text-light">Social Media</p>
+                </foreignObject>
+                <foreignObject x="1300" y="560" width="200" height="60" class="seq-anim fo-text">
+                    <p class="box-text-light">Email</p>
+                </foreignObject>
+                <foreignObject x="750" y="620" width="200" height="60" class="seq-anim fo-text">
+                    <p class="box-text-light">Websites</p>
+                </foreignObject>
+                
+                <foreignObject x="100" y="450" width="600" height="300" class="seq-anim fo-text">
+                    <ul class="sketch-list">
+                        <li>Internet-based communication</li>
+                        <li>High interactivity and engagement</li>
+                        <li>Data-driven promotions</li>
+                        <li>Focus on conversion & retention</li>
+                    </ul>
+                </foreignObject>
+            </svg>
+
+            <!-- SLIDE 3: What is E-Commerce -->
+            <svg viewBox="0 0 1600 900" class="slide-svg" id="slide-3">
+                <foreignObject x="100" y="80" width="1400" height="100" class="seq-anim fo-text">
+                    <h1 class="heading">What is E-Commerce?</h1>
+                </foreignObject>
+                <path class="seq-anim stroke-accent stroke-thick" d="M 100 150 Q 300 140 450 155" />
+
+                <foreignObject x="100" y="200" width="1400" height="100" class="seq-anim fo-text">
+                    <p class="body-text">The process of <span class="accent-text">buying and selling</span> goods or services via the internet, and the transfer of money and data to execute these transactions.</p>
+                </foreignObject>
+
+                <!-- Transaction Flow -->
+                <!-- Seller Box -->
+                <path class="seq-anim stroke-primary stroke-thick" d="M 150 400 L 350 390 L 360 500 L 140 510 Z" />
+                <foreignObject x="150" y="420" width="200" height="80" class="seq-anim fo-text"><p class="box-text-light">Seller</p></foreignObject>
+                
+                <path class="seq-anim stroke-accent stroke-thick" d="M 370 450 L 520 450" />
+                <path class="seq-anim stroke-accent stroke-thick" d="M 490 420 L 520 450 L 490 480" />
+
+                <!-- Digital Store Box -->
+                <path class="seq-anim stroke-accent2 stroke-thick" d="M 550 380 L 750 370 L 760 520 L 540 530 Z" />
+                <foreignObject x="550" y="420" width="200" height="80" class="seq-anim fo-text"><p class="box-text-light" style="color:var(--accent-2)">Website / App</p></foreignObject>
+
+                <path class="seq-anim stroke-accent stroke-thick" d="M 770 450 L 920 450" />
+                <path class="seq-anim stroke-accent stroke-thick" d="M 890 420 L 920 450 L 890 480" />
+
+                <!-- Customer Box -->
+                <path class="seq-anim stroke-primary stroke-thick" d="M 950 400 L 1150 390 L 1160 500 L 940 510 Z" />
+                <foreignObject x="950" y="420" width="200" height="80" class="seq-anim fo-text"><p class="box-text-light">Customer</p></foreignObject>
+
+                <!-- Feedback/Payment Loop -->
+                <path class="seq-anim stroke-primary stroke-thick stroke-dashed" d="M 1050 520 Q 850 700 650 540" />
+                <path class="seq-anim stroke-primary stroke-thick" d="M 680 570 L 650 540 L 640 580" />
+                <foreignObject x="750" y="630" width="200" height="50" class="seq-anim fo-text"><p class="sketch-font accent-text" style="font-size: 28px; text-align: center;">Digital Payment</p></foreignObject>
+
+                <!-- Delivery Loop -->
+                <path class="seq-anim stroke-accent stroke-thick stroke-dashed" d="M 250 520 Q 500 850 1000 520" />
+                <path class="seq-anim stroke-accent stroke-thick" d="M 950 550 L 1000 520 L 980 570" />
+                <foreignObject x="550" y="740" width="200" height="50" class="seq-anim fo-text"><p class="sketch-font" style="color:var(--accent-1); font-size: 28px; text-align: center;">Physical Delivery</p></foreignObject>
+
+                <!-- Types list -->
+                <foreignObject x="1250" y="380" width="300" height="300" class="seq-anim fo-text">
+                    <h3 class="sketch-font" style="font-size:36px; border-bottom: 2px solid white; display: inline-block; margin-bottom: 20px;">Models:</h3>
+                    <ul class="sketch-list">
+                        <li>B2B (Business to Business)</li>
+                        <li>B2C (Business to Consumer)</li>
+                        <li>C2C (Consumer to Consumer)</li>
+                        <li>C2B (Consumer to Business)</li>
+                    </ul>
+                </foreignObject>
+            </svg>
+
+            <!-- SLIDE 4: Evolution -->
+            <svg viewBox="0 0 1600 900" class="slide-svg" id="slide-4">
+                <foreignObject x="100" y="80" width="1400" height="100" class="seq-anim fo-text">
+                    <h1 class="heading">Evolution of Digital Marketing</h1>
+                </foreignObject>
+                <path class="seq-anim stroke-accent stroke-thick" d="M 100 150 Q 400 160 700 145" />
+
+                <!-- Winding Timeline Path -->
+                <path class="seq-anim stroke-primary stroke-thick stroke-dashed" d="M 150 300 L 1400 300 Q 1500 300 1500 450 Q 1500 600 1400 600 L 200 600 Q 100 600 100 750 Q 100 850 200 850 L 1400 850" />
+
+                <!-- Nodes -->
+                <!-- Node 1 -->
+                <circle class="seq-anim stroke-accent2 stroke-thick fill-primary" cx="200" cy="300" r="15" />
+                <foreignObject x="100" y="220" width="200" height="60" class="seq-anim fo-text">
+                    <p class="sketch-font" style="font-size: 28px; text-align: center;">1. Web 1.0<br><span class="small-text">Static Sites</span></p>
+                </foreignObject>
+
+                <!-- Node 2 -->
+                <circle class="seq-anim stroke-accent2 stroke-thick fill-primary" cx="600" cy="300" r="15" />
+                <foreignObject x="500" y="220" width="200" height="60" class="seq-anim fo-text">
+                    <p class="sketch-font" style="font-size: 28px; text-align: center;">2. Search<br><span class="small-text">Google & SEO</span></p>
+                </foreignObject>
+
+                <!-- Node 3 -->
+                <circle class="seq-anim stroke-accent2 stroke-thick fill-primary" cx="1000" cy="300" r="15" />
+                <foreignObject x="900" y="220" width="200" height="60" class="seq-anim fo-text">
+                    <p class="sketch-font" style="font-size: 28px; text-align: center;">3. Web 2.0<br><span class="small-text">Social Media</span></p>
+                </foreignObject>
+
+                <!-- Node 4 -->
+                <circle class="seq-anim stroke-accent2 stroke-thick fill-primary" cx="1300" cy="600" r="15" />
+                <foreignObject x="1200" y="640" width="200" height="60" class="seq-anim fo-text">
+                    <p class="sketch-font" style="font-size: 28px; text-align: center;">4. Mobile Era<br><span class="small-text">Smartphones</span></p>
+                </foreignObject>
+
+                <!-- Node 5 -->
+                <circle class="seq-anim stroke-accent2 stroke-thick fill-primary" cx="800" cy="600" r="15" />
+                <foreignObject x="700" y="640" width="200" height="60" class="seq-anim fo-text">
+                    <p class="sketch-font" style="font-size: 28px; text-align: center;">5. E-Commerce<br><span class="small-text">Online Shopping</span></p>
+                </foreignObject>
+
+                <!-- Node 6 -->
+                <circle class="seq-anim stroke-accent2 stroke-thick fill-primary" cx="300" cy="600" r="15" />
+                <foreignObject x="200" y="640" width="200" height="60" class="seq-anim fo-text">
+                    <p class="sketch-font" style="font-size: 28px; text-align: center;">6. Data-Driven<br><span class="small-text">Targeted Ads</span></p>
+                </foreignObject>
+
+                <!-- Node 7 -->
+                <circle class="seq-anim stroke-accent stroke-thick" cx="700" cy="850" r="20" />
+                <circle class="seq-anim stroke-accent2 stroke-thick" cx="700" cy="850" r="10" />
+                <foreignObject x="600" y="760" width="200" height="80" class="seq-anim fo-text">
+                    <p class="sketch-font accent-text" style="font-size: 32px; text-align: center; font-weight: 700;">7. Present & Future<br><span class="small-text" style="color:white;">AI & Automation</span></p>
+                </foreignObject>
+            </svg>
+
+            <!-- SLIDE 5: Traditional vs Digital Transition -->
+            <svg viewBox="0 0 1600 900" class="slide-svg" id="slide-5">
+                <foreignObject x="100" y="80" width="1400" height="100" class="seq-anim fo-text">
+                    <h1 class="heading">From Traditional to Digital</h1>
+                </foreignObject>
+                <path class="seq-anim stroke-accent stroke-thick" d="M 100 150 Q 300 160 550 145" />
+
+                <!-- Left Side: Traditional -->
+                <foreignObject x="200" y="250" width="300" height="60" class="seq-anim fo-text">
+                    <h2 class="subheading" style="text-align: center;">Traditional</h2>
+                </foreignObject>
+                <!-- Newspaper drawing -->
+                <path class="seq-anim stroke-primary stroke-thick" d="M 200 350 L 400 330 L 420 550 L 220 570 Z" />
+                <path class="seq-anim stroke-primary stroke-thick" d="M 230 380 L 370 360 M 230 410 L 370 390 M 230 440 L 300 430" />
+                <rect class="seq-anim stroke-primary stroke-thick" x="320" y="420" width="60" height="60" />
+                
+                <foreignObject x="150" y="620" width="400" height="150" class="seq-anim fo-text">
+                    <ul class="sketch-list" style="font-size:24px;">
+                        <li>Newspaper & Print</li>
+                        <li>Television & Radio</li>
+                        <li>Billboards & Posters</li>
+                        <li>Physical Stores</li>
+                    </ul>
+                </foreignObject>
+
+                <!-- Transition Arrow -->
+                <path class="seq-anim stroke-accent stroke-thick stroke-dashed" d="M 500 450 Q 800 200 1100 450" />
+                <path class="seq-anim stroke-accent stroke-thick" d="M 1070 420 L 1100 450 L 1060 470" />
+                <foreignObject x="700" y="300" width="200" height="100" class="seq-anim fo-text">
+                    <p class="sketch-font warning-text" style="font-size: 36px; text-align: center;">The Internet Shift</p>
+                </foreignObject>
+
+                <!-- Right Side: Digital -->
+                <foreignObject x="1100" y="250" width="300" height="60" class="seq-anim fo-text">
+                    <h2 class="subheading accent-text" style="text-align: center;">Digital</h2>
+                </foreignObject>
+                <!-- Phone Drawing -->
+                <path class="seq-anim stroke-accent2 stroke-thick" d="M 1150 330 L 1280 330 C 1300 330 1300 350 1300 350 L 1300 550 C 1300 570 1280 570 1280 570 L 1150 570 C 1130 570 1130 550 1130 550 L 1130 350 C 1130 330 1150 330 1150 330 Z" />
+                <!-- Screen elements -->
+                <circle class="seq-anim stroke-primary stroke-thick" cx="1215" cy="400" r="30" />
+                <path class="seq-anim stroke-primary stroke-thick" d="M 1160 460 L 1270 460 M 1160 490 L 1250 490 M 1160 520 L 1200 520" />
+                
+                <foreignObject x="1050" y="620" width="400" height="150" class="seq-anim fo-text">
+                    <ul class="sketch-list" style="font-size:24px;">
+                        <li>Websites & SEO</li>
+                        <li>Social Media</li>
+                        <li>Mobile Apps</li>
+                        <li>E-Commerce Platforms</li>
+                    </ul>
+                </foreignObject>
+            </svg>
+
+            <!-- SLIDE 6: Comparison Table -->
+            <svg viewBox="0 0 1600 900" class="slide-svg" id="slide-6">
+                <foreignObject x="100" y="50" width="1400" height="100" class="seq-anim fo-text">
+                    <h1 class="heading">Traditional vs Digital Marketing</h1>
+                </foreignObject>
+                
+                <!-- Table Grid -->
+                <path class="seq-anim stroke-primary stroke-thick" d="M 100 180 L 1500 180 M 100 250 L 1500 250 M 100 850 L 1500 850" />
+                <path class="seq-anim stroke-primary stroke-thick" d="M 450 180 L 450 850 M 975 180 L 975 850" />
+
+                <!-- Headers -->
+                <foreignObject x="100" y="190" width="350" height="50" class="seq-anim fo-text"><p class="box-text-light">Aspect</p></foreignObject>
+                <foreignObject x="450" y="190" width="525" height="50" class="seq-anim fo-text"><p class="box-text-light" style="color:var(--text-muted)">Traditional</p></foreignObject>
+                <foreignObject x="975" y="190" width="525" height="50" class="seq-anim fo-text"><p class="box-text-light accent-text">Digital</p></foreignObject>
+
+                <!-- Row 1 -->
+                <foreignObject x="120" y="280" width="300" height="50" class="seq-anim fo-text"><p class="body-text">Reach</p></foreignObject>
+                <foreignObject x="470" y="280" width="480" height="50" class="seq-anim fo-text"><p class="body-text" style="font-weight:400">Local / Regional (Limited)</p></foreignObject>
+                <foreignObject x="995" y="280" width="480" height="50" class="seq-anim fo-text"><p class="body-text" style="font-weight:400; color:var(--accent-1)">Global & Expansive</p></foreignObject>
+
+                <!-- Row 2 -->
+                <foreignObject x="120" y="370" width="300" height="50" class="seq-anim fo-text"><p class="body-text">Cost</p></foreignObject>
+                <foreignObject x="470" y="370" width="480" height="50" class="seq-anim fo-text"><p class="body-text" style="font-weight:400">High (TV, Print Ads)</p></foreignObject>
+                <foreignObject x="995" y="370" width="480" height="50" class="seq-anim fo-text"><p class="body-text" style="font-weight:400; color:var(--accent-1)">Cost-Effective (Scalable)</p></foreignObject>
+
+                <!-- Row 3 -->
+                <foreignObject x="120" y="460" width="300" height="50" class="seq-anim fo-text"><p class="body-text">Targeting</p></foreignObject>
+                <foreignObject x="470" y="460" width="480" height="50" class="seq-anim fo-text"><p class="body-text" style="font-weight:400">Broad & Non-specific</p></foreignObject>
+                <foreignObject x="995" y="460" width="480" height="50" class="seq-anim fo-text"><p class="body-text" style="font-weight:400; color:var(--accent-1)">Highly Specific (Data-driven)</p></foreignObject>
+
+                <!-- Row 4 -->
+                <foreignObject x="120" y="550" width="300" height="50" class="seq-anim fo-text"><p class="body-text">Communication</p></foreignObject>
+                <foreignObject x="470" y="550" width="480" height="50" class="seq-anim fo-text"><p class="body-text" style="font-weight:400">One-way</p></foreignObject>
+                <foreignObject x="995" y="550" width="480" height="50" class="seq-anim fo-text"><p class="body-text" style="font-weight:400; color:var(--accent-1)">Two-way (Interactive)</p></foreignObject>
+
+                <!-- Row 5 -->
+                <foreignObject x="120" y="640" width="300" height="50" class="seq-anim fo-text"><p class="body-text">Measurement</p></foreignObject>
+                <foreignObject x="470" y="640" width="480" height="50" class="seq-anim fo-text"><p class="body-text" style="font-weight:400">Difficult to track ROI</p></foreignObject>
+                <foreignObject x="995" y="640" width="480" height="50" class="seq-anim fo-text"><p class="body-text" style="font-weight:400; color:var(--accent-1)">Accurate & Real-time Analytics</p></foreignObject>
+
+                <!-- Row 6 -->
+                <foreignObject x="120" y="730" width="300" height="50" class="seq-anim fo-text"><p class="body-text">Flexibility</p></foreignObject>
+                <foreignObject x="470" y="730" width="480" height="50" class="seq-anim fo-text"><p class="body-text" style="font-weight:400">Rigid (Hard to change once printed)</p></foreignObject>
+                <foreignObject x="995" y="730" width="480" height="50" class="seq-anim fo-text"><p class="body-text" style="font-weight:400; color:var(--accent-1)">Highly Flexible (Edit on the fly)</p></foreignObject>
+                
+                <!-- Highlight Circle on Digital Tracking -->
+                <path class="seq-anim stroke-accent2 stroke-thick" d="M 980 660 Q 1200 600 1450 670 Q 1200 700 980 660 Z" />
+            </svg>
+
+            <!-- SLIDE 7: Applications -->
+            <svg viewBox="0 0 1600 900" class="slide-svg" id="slide-7">
+                <foreignObject x="100" y="60" width="1400" height="100" class="seq-anim fo-text">
+                    <h1 class="heading" style="text-align: center;">Applications of Digital Marketing</h1>
+                </foreignObject>
+
+                <!-- Hub -->
+                <circle class="seq-anim stroke-accent stroke-thick" cx="800" cy="450" r="100" />
+                <foreignObject x="720" y="410" width="160" height="80" class="seq-anim fo-text">
+                    <p class="sketch-font" style="text-align: center; font-size: 32px; color: var(--accent-1); line-height: 1;">DIGITAL<br>MARKETING</p>
+                </foreignObject>
+
+                <!-- Spokes & Labels -->
+                <!-- 12 o'clock -->
+                <path class="seq-anim stroke-primary stroke-thick" d="M 800 350 L 800 200" />
+                <foreignObject x="700" y="140" width="200" height="60" class="seq-anim fo-text">
+                    <p class="box-text-light">SEO & SEM<br><span class="small-text">Search visibility</span></p>
+                </foreignObject>
+
+                <!-- 2 o'clock -->
+                <path class="seq-anim stroke-primary stroke-thick" d="M 880 390 L 1100 250" />
+                <foreignObject x="1110" y="220" width="250" height="80" class="seq-anim fo-text">
+                    <p class="box-text-light">Social Media<br><span class="small-text">Brand engagement</span></p>
+                </foreignObject>
+
+                <!-- 4 o'clock -->
+                <path class="seq-anim stroke-primary stroke-thick" d="M 880 510 L 1100 650" />
+                <foreignObject x="1110" y="630" width="250" height="80" class="seq-anim fo-text">
+                    <p class="box-text-light">Content Mktg<br><span class="small-text">Valuable info</span></p>
+                </foreignObject>
+
+                <!-- 6 o'clock -->
+                <path class="seq-anim stroke-primary stroke-thick" d="M 800 550 L 800 750" />
+                <foreignObject x="700" y="760" width="200" height="80" class="seq-anim fo-text">
+                    <p class="box-text-light">Email Mktg<br><span class="small-text">Direct retention</span></p>
+                </foreignObject>
+
+                <!-- 8 o'clock -->
+                <path class="seq-anim stroke-primary stroke-thick" d="M 720 510 L 500 650" />
+                <foreignObject x="220" y="630" width="270" height="80" class="seq-anim fo-text">
+                    <p class="box-text-light">Influencer<br><span class="small-text">Trust & Authority</span></p>
+                </foreignObject>
+
+                <!-- 10 o'clock -->
+                <path class="seq-anim stroke-primary stroke-thick" d="M 720 390 L 500 250" />
+                <foreignObject x="220" y="220" width="270" height="80" class="seq-anim fo-text">
+                    <p class="box-text-light">Affiliate Mktg<br><span class="small-text">Commission sales</span></p>
+                </foreignObject>
+            </svg>
+
+            <!-- SLIDE 8: Benefits -->
+            <svg viewBox="0 0 1600 900" class="slide-svg" id="slide-8">
+                <foreignObject x="100" y="80" width="1400" height="100" class="seq-anim fo-text">
+                    <h1 class="heading">Why is it Powerful? (Benefits)</h1>
+                </foreignObject>
+                <path class="seq-anim stroke-accent stroke-thick" d="M 100 150 Q 300 160 550 145" />
+
+                <!-- Grid Layout of Benefits -->
+                <!-- Item 1: Global Reach -->
+                <circle class="seq-anim stroke-accent2 stroke-thick" cx="250" cy="350" r="40" />
+                <path class="seq-anim stroke-accent2 stroke-thick" d="M 210 350 Q 250 390 290 350 M 230 315 L 230 385 M 270 315 L 270 385" />
+                <foreignObject x="100" y="410" width="300" height="150" class="seq-anim fo-text">
+                    <h3 class="sketch-font accent-text" style="font-size: 32px; text-align: center;">Global Reach</h3>
+                    <p class="body-text small-text" style="text-align: center;">Sell anywhere, anytime beyond physical borders.</p>
+                </foreignObject>
+
+                <!-- Item 2: Precise Targeting -->
+                <path class="seq-anim stroke-accent2 stroke-thick" d="M 750 310 L 850 310 L 850 410 L 750 410 Z" />
+                <circle class="seq-anim stroke-accent2 stroke-thick" cx="800" cy="360" r="20" />
+                <circle class="seq-anim stroke-accent2 stroke-thick" cx="800" cy="360" r="5" />
+                <foreignObject x="650" y="430" width="300" height="150" class="seq-anim fo-text">
+                    <h3 class="sketch-font accent-text" style="font-size: 32px; text-align: center;">Precise Targeting</h3>
+                    <p class="body-text small-text" style="text-align: center;">Reach specific ages, interests, and locations.</p>
+                </foreignObject>
+
+                <!-- Item 3: Measurable -->
+                <path class="seq-anim stroke-accent2 stroke-thick" d="M 1300 400 L 1300 370 M 1330 400 L 1330 340 M 1360 400 L 1360 310" />
+                <path class="seq-anim stroke-accent2 stroke-thick" d="M 1280 400 L 1380 400 L 1380 300" />
+                <foreignObject x="1180" y="430" width="300" height="150" class="seq-anim fo-text">
+                    <h3 class="sketch-font accent-text" style="font-size: 32px; text-align: center;">Measurable Results</h3>
+                    <p class="body-text small-text" style="text-align: center;">Track clicks, sales, and ROI in real-time.</p>
+                </foreignObject>
+
+                <!-- Item 4: Cost Effective -->
+                <path class="seq-anim stroke-accent2 stroke-thick" d="M 450 650 Q 500 600 550 650 M 500 600 L 500 700 M 480 630 L 520 630 M 480 670 L 520 670" />
+                <foreignObject x="350" y="730" width="300" height="150" class="seq-anim fo-text">
+                    <h3 class="sketch-font accent-text" style="font-size: 32px; text-align: center;">Cost Effective</h3>
+                    <p class="body-text small-text" style="text-align: center;">Lower barrier to entry for small businesses.</p>
+                </foreignObject>
+
+                <!-- Item 5: Personalization -->
+                <circle class="seq-anim stroke-accent2 stroke-thick" cx="1000" cy="620" r="20" />
+                <path class="seq-anim stroke-accent2 stroke-thick" d="M 970 690 C 970 650 1030 650 1030 690" />
+                <path class="seq-anim stroke-accent2 stroke-thick" d="M 1040 620 L 1060 600 M 1060 620 L 1040 600" /> <!-- Sparkles -->
+                <foreignObject x="850" y="730" width="300" height="150" class="seq-anim fo-text">
+                    <h3 class="sketch-font accent-text" style="font-size: 32px; text-align: center;">Personalization</h3>
+                    <p class="body-text small-text" style="text-align: center;">Custom messages tailored to individual behavior.</p>
+                </foreignObject>
+            </svg>
+
+            <!-- SLIDE 9: Customer Journey -->
+            <svg viewBox="0 0 1600 900" class="slide-svg" id="slide-9">
+                <foreignObject x="100" y="80" width="1400" height="100" class="seq-anim fo-text">
+                    <h1 class="heading">Digital Marketing & Customer Journey</h1>
+                </foreignObject>
+                <path class="seq-anim stroke-accent stroke-thick" d="M 100 150 Q 400 160 850 145" />
+
+                <!-- Continuous Winding Path -->
+                <path class="seq-anim stroke-primary stroke-thick stroke-dashed" d="M 150 250 L 1400 250 Q 1450 250 1450 350 Q 1450 450 1400 450 L 200 450 Q 150 450 150 550 Q 150 650 200 650 L 1400 650" />
+
+                <!-- Stage 1: Awareness -->
+                <circle class="seq-anim stroke-accent stroke-thick fill-primary" cx="200" cy="250" r="25" />
+                <foreignObject x="100" y="280" width="200" height="100" class="seq-anim fo-text">
+                    <h3 class="sketch-font" style="font-size:32px; text-align:center;">Awareness</h3>
+                    <p class="small-text" style="text-align:center;">Social Ads, SEO</p>
+                </foreignObject>
+
+                <!-- Stage 2: Interest -->
+                <circle class="seq-anim stroke-accent stroke-thick fill-primary" cx="600" cy="250" r="25" />
+                <foreignObject x="500" y="280" width="200" height="100" class="seq-anim fo-text">
+                    <h3 class="sketch-font" style="font-size:32px; text-align:center;">Interest</h3>
+                    <p class="small-text" style="text-align:center;">Blogs, Videos</p>
+                </foreignObject>
+
+                <!-- Stage 3: Consideration -->
+                <circle class="seq-anim stroke-accent stroke-thick fill-primary" cx="1000" cy="250" r="25" />
+                <foreignObject x="900" y="280" width="200" height="100" class="seq-anim fo-text">
+                    <h3 class="sketch-font" style="font-size:32px; text-align:center;">Consideration</h3>
+                    <p class="small-text" style="text-align:center;">Reviews, Webinars</p>
+                </foreignObject>
+
+                <!-- Stage 4: Purchase (Highlights) -->
+                <circle class="seq-anim stroke-accent2 stroke-thick fill-accent" cx="1300" cy="450" r="35" />
+                <foreignObject x="1150" y="380" width="300" height="100" class="seq-anim fo-text">
+                    <h3 class="sketch-font warning-text" style="font-size:42px; text-align:center;">PURCHASE</h3>
+                    <p class="small-text" style="text-align:center; color:white;">E-Commerce Platform</p>
+                </foreignObject>
+
+                <!-- Stage 5: Retention -->
+                <circle class="seq-anim stroke-accent stroke-thick fill-primary" cx="700" cy="450" r="25" />
+                <foreignObject x="600" y="480" width="200" height="100" class="seq-anim fo-text">
+                    <h3 class="sketch-font" style="font-size:32px; text-align:center;">Retention</h3>
+                    <p class="small-text" style="text-align:center;">Email, Loyalty App</p>
+                </foreignObject>
+
+                <!-- Stage 6: Advocacy -->
+                <circle class="seq-anim stroke-accent stroke-thick fill-primary" cx="300" cy="650" r="25" />
+                <foreignObject x="200" y="680" width="200" height="100" class="seq-anim fo-text">
+                    <h3 class="sketch-font" style="font-size:32px; text-align:center;">Advocacy</h3>
+                    <p class="small-text" style="text-align:center;">Referrals, Shares</p>
+                </foreignObject>
+                
+                <path class="seq-anim stroke-accent2 stroke-thick" d="M 1250 430 Q 1200 300 1050 250" /> <!-- Loop back arrow idea -->
+            </svg>
+
+            <!-- SLIDE 10: Relationship DM & EC -->
+            <svg viewBox="0 0 1600 900" class="slide-svg" id="slide-10">
+                <foreignObject x="100" y="80" width="1400" height="100" class="seq-anim fo-text">
+                    <h1 class="heading" style="text-align: center;">How They Work Together</h1>
+                </foreignObject>
+
+                <!-- Funnel Concept -->
+                <!-- Top wide (Digital Marketing) -->
+                <path class="seq-anim stroke-accent stroke-thick" d="M 400 250 L 1200 250 L 1000 500 L 600 500 Z" />
+                <foreignObject x="500" y="320" width="600" height="100" class="seq-anim fo-text">
+                    <h2 class="sketch-font" style="font-size: 50px; text-align: center; color: var(--accent-1);">Digital Marketing</h2>
+                    <p class="body-text" style="text-align: center;">Drives Traffic & Creates Demand</p>
+                </foreignObject>
+
+                <!-- Arrow down -->
+                <path class="seq-anim stroke-primary stroke-thick" d="M 800 520 L 800 620" />
+                <path class="seq-anim stroke-primary stroke-thick" d="M 770 590 L 800 620 L 830 590" />
+
+                <!-- Bottom box (E-Commerce) -->
+                <path class="seq-anim stroke-accent2 stroke-thick" d="M 600 650 L 1000 650 L 1000 800 L 600 800 Z" />
+                <foreignObject x="600" y="680" width="400" height="100" class="seq-anim fo-text">
+                    <h2 class="sketch-font" style="font-size: 50px; text-align: center; color: var(--accent-2);">E-Commerce</h2>
+                    <p class="body-text" style="text-align: center;">Captures Value & Completes Sale</p>
+                </foreignObject>
+
+                <!-- Left annotations -->
+                <foreignObject x="150" y="300" width="200" height="150" class="seq-anim fo-text">
+                    <ul class="sketch-list small-text">
+                        <li>Ads</li>
+                        <li>Social Media</li>
+                        <li>SEO</li>
+                    </ul>
+                </foreignObject>
+                <path class="seq-anim stroke-primary stroke-thick stroke-dashed" d="M 320 350 L 450 350" />
+
+                <!-- Right annotations -->
+                <foreignObject x="1250" y="680" width="200" height="150" class="seq-anim fo-text">
+                    <ul class="sketch-list small-text">
+                        <li>Cart</li>
+                        <li>Payment</li>
+                        <li>Fulfillment</li>
+                    </ul>
+                </foreignObject>
+                <path class="seq-anim stroke-primary stroke-thick stroke-dashed" d="M 1250 720 L 1050 720" />
+            </svg>
+
+            <!-- SLIDE 11: India Context -->
+            <svg viewBox="0 0 1600 900" class="slide-svg" id="slide-11">
+                <foreignObject x="100" y="80" width="1400" height="100" class="seq-anim fo-text">
+                    <h1 class="heading">Digital Marketing & E-Commerce in India</h1>
+                </foreignObject>
+                <path class="seq-anim stroke-accent stroke-thick" d="M 100 150 Q 400 160 900 145" />
+
+                <!-- Simplified India Map Outline -->
+                <path class="seq-anim stroke-primary stroke-thick" d="M 750 200 L 800 250 L 780 350 L 850 400 L 950 400 L 1000 450 L 950 550 L 850 650 L 800 800 L 700 700 L 600 650 L 550 550 L 550 450 L 600 350 L 650 300 Z" fill="rgba(255,255,255,0.02)"/>
+
+                <!-- Nodes popping up -->
+                <!-- Smartphone/Internet -->
+                <circle class="seq-anim stroke-accent2 stroke-thick fill-primary" cx="650" cy="350" r="10" />
+                <path class="seq-anim stroke-primary stroke-dashed stroke-thick" d="M 650 350 L 400 300" />
+                <foreignObject x="150" y="270" width="250" height="100" class="seq-anim fo-text">
+                    <h3 class="sketch-font accent-text" style="font-size:32px;">Internet Boom</h3>
+                    <p class="small-text">Jio Effect, Affordable Data</p>
+                </foreignObject>
+
+                <!-- UPI -->
+                <circle class="seq-anim stroke-accent2 stroke-thick fill-primary" cx="800" cy="550" r="10" />
+                <path class="seq-anim stroke-primary stroke-dashed stroke-thick" d="M 800 550 L 1100 500" />
+                <foreignObject x="1120" y="470" width="300" height="100" class="seq-anim fo-text">
+                    <h3 class="sketch-font warning-text" style="font-size:32px;">Digital Payments</h3>
+                    <p class="small-text">UPI Revolution, High Trust</p>
+                </foreignObject>
+
+                <!-- Social Media -->
+                <circle class="seq-anim stroke-accent2 stroke-thick fill-primary" cx="700" cy="450" r="10" />
+                <path class="seq-anim stroke-primary stroke-dashed stroke-thick" d="M 700 450 L 350 500" />
+                <foreignObject x="100" y="470" width="250" height="100" class="seq-anim fo-text">
+                    <h3 class="sketch-font accent-text" style="font-size:32px;">Social Media</h3>
+                    <p class="small-text">WhatsApp, Insta dominance</p>
+                </foreignObject>
+
+                <!-- Startups -->
+                <circle class="seq-anim stroke-accent2 stroke-thick fill-primary" cx="850" cy="650" r="10" />
+                <path class="seq-anim stroke-primary stroke-dashed stroke-thick" d="M 850 650 L 1100 700" />
+                <foreignObject x="1120" y="670" width="300" height="100" class="seq-anim fo-text">
+                    <h3 class="sketch-font accent-text" style="font-size:32px;">Startup Ecosystem</h3>
+                    <p class="small-text">D2C brands, Quick Commerce</p>
+                </foreignObject>
+            </svg>
+
+            <!-- SLIDE 12: Major Channels India -->
+            <svg viewBox="0 0 1600 900" class="slide-svg" id="slide-12">
+                <foreignObject x="100" y="80" width="1400" height="100" class="seq-anim fo-text">
+                    <h1 class="heading">Major Channels for Indian Businesses</h1>
+                </foreignObject>
+                <path class="seq-anim stroke-accent stroke-thick" d="M 100 150 Q 400 160 900 145" />
+
+                <!-- Grid of Platforms -->
+                
+                <!-- Box 1: WhatsApp -->
+                <path class="seq-anim stroke-primary stroke-thick" d="M 150 250 L 550 250 L 550 450 L 150 450 Z" />
+                <foreignObject x="170" y="280" width="360" height="150" class="seq-anim fo-text">
+                    <h3 class="sketch-font accent-text" style="font-size:36px;">WhatsApp Business</h3>
+                    <p class="body-text small-text">Direct customer chat, catalogues, and payments natively.</p>
+                </foreignObject>
+
+                <!-- Box 2: Instagram/FB -->
+                <path class="seq-anim stroke-primary stroke-thick" d="M 600 250 L 1000 250 L 1000 450 L 600 450 Z" />
+                <foreignObject x="620" y="280" width="360" height="150" class="seq-anim fo-text">
+                    <h3 class="sketch-font accent-text" style="font-size:36px;">Instagram & Meta</h3>
+                    <p class="body-text small-text">Visual marketing, influencers, and targeted local ads.</p>
+                </foreignObject>
+
+                <!-- Box 3: Google/YouTube -->
+                <path class="seq-anim stroke-primary stroke-thick" d="M 1050 250 L 1450 250 L 1450 450 L 1050 450 Z" />
+                <foreignObject x="1070" y="280" width="360" height="150" class="seq-anim fo-text">
+                    <h3 class="sketch-font accent-text" style="font-size:36px;">Google & YouTube</h3>
+                    <p class="body-text small-text">Search intent, local SEO (Google My Business), video content.</p>
+                </foreignObject>
+
+                <!-- Box 4: Marketplaces -->
+                <path class="seq-anim stroke-primary stroke-thick" d="M 150 500 L 550 500 L 550 700 L 150 700 Z" />
+                <foreignObject x="170" y="530" width="360" height="150" class="seq-anim fo-text">
+                    <h3 class="sketch-font accent-text" style="font-size:36px;">E-Commerce Platforms</h3>
+                    <p class="body-text small-text">Amazon India, Flipkart, Meesho for tier-2/3 reach.</p>
+                </foreignObject>
+
+                <!-- Box 5: Influencers -->
+                <path class="seq-anim stroke-primary stroke-thick" d="M 600 500 L 1000 500 L 1000 700 L 600 700 Z" />
+                <foreignObject x="620" y="530" width="360" height="150" class="seq-anim fo-text">
+                    <h3 class="sketch-font accent-text" style="font-size:36px;">Regional Influencers</h3>
+                    <p class="body-text small-text">Micro-influencers speaking local languages build massive trust.</p>
+                </foreignObject>
+                
+                <!-- Underline emphasis on trust -->
+                <path class="seq-anim stroke-accent2 stroke-thick" d="M 620 660 L 750 655" />
+            </svg>
+
+            <!-- SLIDE 13: Challenges -->
+            <svg viewBox="0 0 1600 900" class="slide-svg" id="slide-13">
+                <foreignObject x="100" y="80" width="1400" height="100" class="seq-anim fo-text">
+                    <h1 class="heading warning-text">Challenges of Digital Marketing</h1>
+                </foreignObject>
+                <path class="seq-anim stroke-accent2 stroke-thick" d="M 100 150 Q 300 160 550 145" />
+
+                <!-- Layout: Left Icons, Right Text -->
+                <!-- Challenge 1: Competition -->
+                <path class="seq-anim stroke-primary stroke-thick" d="M 150 250 L 200 200 L 250 250 M 200 200 L 200 300" />
+                <path class="seq-anim stroke-primary stroke-thick" d="M 200 250 L 150 300 L 100 250 M 150 300 L 150 200" style="transform: translate(80px, 0)" />
+                <foreignObject x="350" y="220" width="1000" height="80" class="seq-anim fo-text">
+                    <p class="body-text"><span class="sketch-font accent-text" style="font-size:36px">High Competition:</span> Everyone is online, causing digital noise & ad fatigue.</p>
+                </foreignObject>
+
+                <!-- Challenge 2: Privacy -->
+                <rect class="seq-anim stroke-primary stroke-thick" x="150" y="380" width="100" height="60" rx="10" />
+                <path class="seq-anim stroke-primary stroke-thick" d="M 170 380 Q 200 330 230 380" />
+                <foreignObject x="350" y="370" width="1000" height="80" class="seq-anim fo-text">
+                    <p class="body-text"><span class="sketch-font accent-text" style="font-size:36px">Privacy Concerns:</span> Stricter data protection laws and cookie deprecation.</p>
+                </foreignObject>
+
+                <!-- Challenge 3: Trust/Fake -->
+                <circle class="seq-anim stroke-accent2 stroke-thick" cx="200" cy="550" r="40" />
+                <path class="seq-anim stroke-accent2 stroke-thick" d="M 185 535 L 215 565 M 215 535 L 185 565" />
+                <foreignObject x="350" y="520" width="1000" height="80" class="seq-anim fo-text">
+                    <p class="body-text"><span class="sketch-font warning-text" style="font-size:36px">Misinformation & Fake Reviews:</span> Difficulty maintaining authentic customer trust.</p>
+                </foreignObject>
+
+                <!-- Challenge 4: Tech Changes -->
+                <path class="seq-anim stroke-primary stroke-thick" d="M 150 680 L 180 650 L 210 700 L 250 630" />
+                <foreignObject x="350" y="670" width="1000" height="80" class="seq-anim fo-text">
+                    <p class="body-text"><span class="sketch-font accent-text" style="font-size:36px">Algorithm Changes:</span> Platforms constantly change rules, requiring constant learning.</p>
+                </foreignObject>
+            </svg>
+
+            <!-- SLIDE 14: Future -->
+            <svg viewBox="0 0 1600 900" class="slide-svg" id="slide-14">
+                <foreignObject x="100" y="80" width="1400" height="100" class="seq-anim fo-text">
+                    <h1 class="heading">The Future of E-Commerce & Marketing</h1>
+                </foreignObject>
+                <path class="seq-anim stroke-accent stroke-thick" d="M 100 150 Q 400 160 800 145" />
+
+                <!-- AI Brain Graphic Center -->
+                <path class="seq-anim stroke-primary stroke-thick" d="M 750 350 C 650 350 650 450 750 550 C 850 450 850 350 750 350 Z" />
+                <path class="seq-anim stroke-accent stroke-thick" d="M 700 400 Q 750 420 800 400 M 700 450 Q 750 470 800 450 M 720 500 Q 750 510 780 500" />
+                <foreignObject x="650" y="570" width="200" height="60" class="seq-anim fo-text">
+                    <p class="sketch-font accent-text" style="text-align: center; font-size: 32px;">Artificial Intelligence</p>
+                </foreignObject>
+
+                <!-- Connecting elements to future concepts -->
+                <path class="seq-anim stroke-primary stroke-dashed stroke-thick" d="M 750 330 L 750 200" />
+                <foreignObject x="650" y="130" width="200" height="60" class="seq-anim fo-text">
+                    <p class="box-text-light">Hyper-Personalization</p>
+                </foreignObject>
+
+                <path class="seq-anim stroke-primary stroke-dashed stroke-thick" d="M 650 450 L 400 450" />
+                <foreignObject x="150" y="420" width="230" height="60" class="seq-anim fo-text">
+                    <p class="box-text-light">Voice & Visual Search</p>
+                </foreignObject>
+
+                <path class="seq-anim stroke-primary stroke-dashed stroke-thick" d="M 850 450 L 1100 450" />
+                <foreignObject x="1120" y="420" width="250" height="60" class="seq-anim fo-text">
+                    <p class="box-text-light">Social & Live Commerce</p>
+                </foreignObject>
+
+                <path class="seq-anim stroke-primary stroke-dashed stroke-thick" d="M 700 520 L 500 650" />
+                <foreignObject x="350" y="660" width="200" height="60" class="seq-anim fo-text">
+                    <p class="box-text-light">Augmented Reality (AR)</p>
+                </foreignObject>
+
+                <path class="seq-anim stroke-primary stroke-dashed stroke-thick" d="M 800 520 L 1000 650" />
+                <foreignObject x="950" y="660" width="200" height="60" class="seq-anim fo-text">
+                    <p class="box-text-light">Predictive Analytics</p>
+                </foreignObject>
+            </svg>
+
+            <!-- SLIDE 15: Conclusion -->
+            <svg viewBox="0 0 1600 900" class="slide-svg" id="slide-15">
+                <foreignObject x="100" y="80" width="1400" height="100" class="seq-anim fo-text">
+                    <h1 class="heading" style="text-align: center;">Conclusion</h1>
+                </foreignObject>
+                <path class="seq-anim stroke-accent stroke-thick" d="M 650 150 Q 800 160 950 145" />
+
+                <foreignObject x="200" y="200" width="1200" height="150" class="seq-anim fo-text">
+                    <p class="body-text" style="text-align: center; font-size: 32px;">Digital marketing <span class="accent-text">connects</span> businesses with customers,<br>while e-commerce <span class="accent-text">enables</span> digital buying and selling.<br>Together, they have transformed the modern marketplace.</p>
+                </foreignObject>
+
+                <!-- Flowchart summary -->
+                <path class="seq-anim stroke-primary stroke-thick" d="M 200 400 L 1400 400" />
+                <circle class="seq-anim stroke-accent stroke-thick fill-primary" cx="200" cy="400" r="15" />
+                <foreignObject x="100" y="430" width="200" height="80" class="seq-anim fo-text"><p class="sketch-font" style="text-align:center; font-size: 28px;">Traditional<br>Market</p></foreignObject>
+                
+                <circle class="seq-anim stroke-accent stroke-thick fill-primary" cx="500" cy="400" r="15" />
+                <foreignObject x="400" y="430" width="200" height="80" class="seq-anim fo-text"><p class="sketch-font" style="text-align:center; font-size: 28px;">Internet<br>Revolution</p></foreignObject>
+
+                <circle class="seq-anim stroke-accent stroke-thick fill-primary" cx="800" cy="400" r="15" />
+                <foreignObject x="700" y="430" width="200" height="80" class="seq-anim fo-text"><p class="sketch-font" style="text-align:center; font-size: 28px;">Digital<br>Marketing</p></foreignObject>
+
+                <circle class="seq-anim stroke-accent stroke-thick fill-primary" cx="1100" cy="400" r="15" />
+                <foreignObject x="1000" y="430" width="200" height="80" class="seq-anim fo-text"><p class="sketch-font" style="text-align:center; font-size: 28px;">E-Commerce</p></foreignObject>
+
+                <circle class="seq-anim stroke-accent2 stroke-thick fill-primary" cx="1400" cy="400" r="25" />
+                <foreignObject x="1300" y="440" width="200" height="80" class="seq-anim fo-text"><p class="sketch-font warning-text" style="text-align:center; font-size: 32px;">Connected<br>Customer</p></foreignObject>
+
+                <!-- Outro -->
+                <foreignObject x="600" y="600" width="400" height="200" class="seq-anim fo-text">
+                    <h1 class="heading" style="text-align: center; font-size: 80px;">Thank You!</h1>
+                    <p class="body-text small-text" style="text-align: center; margin-top: 20px;">Presented by:<br><span class="sketch-font accent-text" style="font-size: 36px; color: white;">Kartik Chouhan</span><br>Roll No: 250408 | M.Com 3rd Sem</p>
+                </foreignObject>
+            </svg>
+
+        </div>
+
+        <!-- UI Overlays -->
+        <div id="ui-layer">
+            <div id="slide-counter">01 / 15</div>
+            <div class="controls-group">
+                <button id="btn-prev" title="Previous Slide">
+                    <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+                </button>
+                <button id="btn-replay" title="Replay Animation">
+                    <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+                </button>
+                <button id="btn-skip" title="Skip Animation">
+                    <svg viewBox="0 0 24 24"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
+                </button>
+                <button id="btn-next" title="Next Slide">
+                    <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                </button>
+                <button id="btn-fullscreen" title="Fullscreen">
+                    <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const totalSlides = 15;
+        let currentSlide = 1;
+        let isAnimating = false;
+        let skipRequested = false;
+        let activeAnimationId = 0;
+
+        const svgs = document.querySelectorAll('.slide-svg');
+        const progressBar = document.getElementById('progress-bar');
+        const counter = document.getElementById('slide-counter');
+
+        const wait = ms => new Promise(res => setTimeout(res, ms));
+
+        function updateUI() {
+            counter.innerText = `${currentSlide.toString().padStart(2, '0')} / ${totalSlides}`;
+            progressBar.style.width = `${((currentSlide - 1) / (totalSlides - 1)) * 100}%`;
+        }
+
+        async function playSlide(index, replay = false) {
+            currentSlide = index;
+            const animId = ++activeAnimationId;
+            skipRequested = false;
+            updateUI();
+
+            // Handle visibility/transitions
+            svgs.forEach((svg, i) => {
+                if(i === index - 1) {
+                    svg.classList.add('active');
+                } else {
+                    svg.classList.remove('active');
+                }
+            });
+
+            const activeSvg = svgs[index - 1];
+            const elements = activeSvg.querySelectorAll('.seq-anim');
+
+            // Reset all elements in current slide
+            elements.forEach(el => {
+                if(el.tagName === 'path' || el.tagName === 'polyline' || el.tagName === 'line' || el.tagName === 'circle' || el.tagName === 'rect') {
+                    const len = el.getTotalLength() || 2000;
+                    el.style.transition = 'none';
+                    el.style.strokeDasharray = len;
+                    el.style.strokeDashoffset = len;
+                    el.style.opacity = '1';
+                } else {
+                    el.style.transition = 'none';
+                    el.style.opacity = '0';
+                    el.style.transform = 'translateY(15px)';
+                }
+            });
+
+            await wait(100); // Wait for transition wipe
+            isAnimating = true;
+
+            // Sequential Draw
+            for (let el of elements) {
+                if(animId !== activeAnimationId) return; // Sequence aborted (user changed slide)
+                
+                if(skipRequested) {
+                    elements.forEach(e => forceShow(e));
+                    break;
+                }
+
+                if (el.tagName === 'path' || el.tagName === 'line' || el.tagName === 'circle' || el.tagName === 'rect') {
+                    const len = el.getTotalLength() || 1000;
+                    // Dynamic duration based on line length
+                    let duration = Math.max(300, Math.min(len * 1.5, 1200)); 
+                    
+                    el.style.transition = `stroke-dashoffset ${duration}ms ease-in-out`;
+                    el.getBoundingClientRect(); // trigger reflow
+                    el.style.strokeDashoffset = '0';
+                    await wait(duration + 100);
+                } else {
+                    // Foreign object / text pop in
+                    el.style.transition = 'opacity 0.4s ease-out, transform 0.4s ease-out';
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                    await wait(500); // Reading time before next stroke
+                }
+            }
+            isAnimating = false;
+        }
+
+        function forceShow(el) {
+            el.style.transition = 'none';
+            if (el.style.strokeDashoffset !== undefined) {
+                el.style.strokeDashoffset = '0';
+            }
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+        }
+
+        function nextSlide() {
+            if(currentSlide < totalSlides) {
+                playSlide(currentSlide + 1);
+            }
+        }
+
+        function prevSlide() {
+            if(currentSlide > 1) {
+                playSlide(currentSlide - 1);
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('btn-next').addEventListener('click', nextSlide);
+        document.getElementById('btn-prev').addEventListener('click', prevSlide);
+        document.getElementById('btn-replay').addEventListener('click', () => playSlide(currentSlide));
+        document.getElementById('btn-skip').addEventListener('click', () => {
+            if(isAnimating) skipRequested = true;
+        });
+
+        document.getElementById('btn-fullscreen').addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+            if(e.key === 'ArrowRight' || e.key === ' ') {
+                if(isAnimating) skipRequested = true;
+                else nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+
+        // Touch/Swipe Navigation
+        let touchStartX = 0;
+        let touchEndX = 0;
+        document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+        document.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if(touchEndX < touchStartX - 50) { // Swipe Left -> Next
+                if(isAnimating) skipRequested = true;
+                else nextSlide();
+            }
+            if(touchEndX > touchStartX + 50) { // Swipe Right -> Prev
+                prevSlide();
+            }
+        }
+
+        // Hide/Show Controls on Mouse Move
+        let timeout;
+        const uiLayer = document.getElementById('ui-layer');
+        document.addEventListener('mousemove', () => {
+            uiLayer.style.opacity = '1';
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                if(!document.querySelector('.controls-group:hover')) {
+                    uiLayer.style.opacity = '0.3'; // fade slightly to not distract
+                }
+            }, 3000);
+        });
+
+        // Initialize First Slide
+        window.onload = () => {
+            playSlide(1);
+        };
+    </script>
+</body>
+</html>
